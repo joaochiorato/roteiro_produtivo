@@ -47,11 +47,16 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
       _carregarVariaveisEQuimicos(roteiro.codOperacao);
     }
 
-    _tempoSetupController = TextEditingController(text: roteiro?.tempoSetup ?? '00:00');
-    _tempoEsperaController = TextEditingController(text: roteiro?.tempoEspera ?? '00:00');
-    _tempoRepousoController = TextEditingController(text: roteiro?.tempoRepouso ?? '00:00');
-    _tempoInicioController = TextEditingController(text: roteiro?.tempoInicio ?? '00:00');
-    _observacaoController = TextEditingController(text: roteiro?.observacao ?? '');
+    _tempoSetupController =
+        TextEditingController(text: roteiro?.tempoSetup ?? '00:00');
+    _tempoEsperaController =
+        TextEditingController(text: roteiro?.tempoEspera ?? '00:00');
+    _tempoRepousoController =
+        TextEditingController(text: roteiro?.tempoRepouso ?? '00:00');
+    _tempoInicioController =
+        TextEditingController(text: roteiro?.tempoInicio ?? '00:00');
+    _observacaoController =
+        TextEditingController(text: roteiro?.observacao ?? '');
   }
 
   void _carregarVariaveisEQuimicos(int codOperacao) {
@@ -132,7 +137,8 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
     final novaVariavel = await showDialog<VariavelControle>(
       context: context,
       builder: (context) => _DialogAdicionarVariavel(
-        proximaSeq: (_variaveis.isEmpty ? 0 : int.parse(_variaveis.last.seq)) + 1,
+        proximaSeq:
+            (_variaveis.isEmpty ? 0 : int.parse(_variaveis.last.seq)) + 1,
       ),
     );
 
@@ -261,7 +267,8 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
               Icon(Icons.warning, color: Colors.amber),
               SizedBox(width: 12),
               Expanded(
-                child: Text('Nenhuma operação cadastrada. Cadastre uma operação primeiro.'),
+                child: Text(
+                    'Nenhuma operação cadastrada. Cadastre uma operação primeiro.'),
               ),
             ],
           ),
@@ -334,6 +341,11 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
               DropdownMenuItem(value: 'ENX', child: Text('ENX - Enxugadeira')),
               DropdownMenuItem(value: 'RML', child: Text('RML - Remolho')),
               DropdownMenuItem(value: 'DIV', child: Text('DIV - Divisora')),
+              DropdownMenuItem(value: 'CUR', child: Text('CUR - Curtimento')),
+              DropdownMenuItem(value: 'REC', child: Text('REC - Recurtimento')),
+              DropdownMenuItem(value: 'TIN', child: Text('TIN - Tingimento')),
+              DropdownMenuItem(value: 'RCL', child: Text('RCL - Reclassificação')),
+              DropdownMenuItem(value: 'CAL', child: Text('CAL - Calha')),
             ],
             onChanged: (v) => setState(() => _postoTrabalho = v),
           ),
@@ -414,41 +426,55 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
               columnSpacing: 24,
               horizontalMargin: 16,
               columns: const [
-                DataColumn(label: Text('Seq', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Descrição', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Padrão', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Previsto/Toler.', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Unid', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Ações', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Seq',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Descrição',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Padrão',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Previsto/Toler.',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Unid',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Ações',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
               ],
               rows: _variaveis.map((v) {
                 return DataRow(
                   cells: [
-                      DataCell(Text(v.seq)),
-                      DataCell(Text(v.descricao)),
-                      DataCell(Text(v.padrao)),
-                      DataCell(Text(v.previstoTolerancia)),
-                      DataCell(Text(v.unidade)),
-                      DataCell(
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, size: 18),
-                              onPressed: () => _editarVariavel(v),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                              onPressed: () => setState(() => _variaveis.remove(v)),
-                            ),
-                          ],
-                        ),
+                    DataCell(Text(v.seq)),
+                    DataCell(Text(v.descricao)),
+                    DataCell(Text(v.padrao)),
+                    DataCell(Text(v.previstoTolerancia)),
+                    DataCell(Text(v.unidade)),
+                    DataCell(
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 18),
+                            onPressed: () => _editarVariavel(v),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete,
+                                size: 18, color: Colors.red),
+                            onPressed: () =>
+                                setState(() => _variaveis.remove(v)),
+                          ),
+                        ],
                       ),
-                    ],
-                  );
-                }).toList(),
-              ),
+                    ),
+                  ],
+                );
+              }).toList(),
             ),
+          ),
       ],
     );
   }
@@ -513,14 +539,30 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
               columnSpacing: 24,
               horizontalMargin: 16,
               columns: const [
-                DataColumn(label: Text('Seq', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Cód. Prod.', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Cód. Ref.', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Descrição', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Padrão', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Previsto/Toler.', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Unid', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Ações', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Seq',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Cód. Prod.',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Cód. Ref.',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Descrição',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Padrão',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Previsto/Toler.',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Unid',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(
+                    label: Text('Ações',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
               ],
               rows: _quimicos.map((q) {
                 return DataRow(
@@ -541,8 +583,10 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
                             onPressed: () => _editarQuimico(q),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                            onPressed: () => setState(() => _quimicos.remove(q)),
+                            icon: const Icon(Icons.delete,
+                                size: 18, color: Colors.red),
+                            onPressed: () =>
+                                setState(() => _quimicos.remove(q)),
                           ),
                         ],
                       ),
@@ -555,6 +599,7 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
       ],
     );
   }
+
   void _editarVariavel(VariavelControle variavel) async {
     final variavelEditada = await showDialog<VariavelControle>(
       context: context,
@@ -595,7 +640,8 @@ class _DialogAdicionarVariavel extends StatefulWidget {
   const _DialogAdicionarVariavel({required this.proximaSeq});
 
   @override
-  State<_DialogAdicionarVariavel> createState() => _DialogAdicionarVariavelState();
+  State<_DialogAdicionarVariavel> createState() =>
+      _DialogAdicionarVariavelState();
 }
 
 class _DialogAdicionarVariavelState extends State<_DialogAdicionarVariavel> {
@@ -713,6 +759,7 @@ class _DialogAdicionarVariavelState extends State<_DialogAdicionarVariavel> {
     );
   }
 }
+
 /// Dialog para adicionar químico
 class _DialogAdicionarQuimico extends StatefulWidget {
   final int proximaSeq;
@@ -720,7 +767,8 @@ class _DialogAdicionarQuimico extends StatefulWidget {
   const _DialogAdicionarQuimico({required this.proximaSeq});
 
   @override
-  State<_DialogAdicionarQuimico> createState() => _DialogAdicionarQuimicoState();
+  State<_DialogAdicionarQuimico> createState() =>
+      _DialogAdicionarQuimicoState();
 }
 
 class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
@@ -936,9 +984,11 @@ class _DialogEditarVariavelState extends State<_DialogEditarVariavel> {
   @override
   void initState() {
     super.initState();
-    _descricaoController = TextEditingController(text: widget.variavel.descricao);
+    _descricaoController =
+        TextEditingController(text: widget.variavel.descricao);
     _padraoController = TextEditingController(text: widget.variavel.padrao);
-    _previstoController = TextEditingController(text: widget.variavel.previstoTolerancia);
+    _previstoController =
+        TextEditingController(text: widget.variavel.previstoTolerancia);
     _unidadeController = TextEditingController(text: widget.variavel.unidade);
   }
 
@@ -1085,11 +1135,14 @@ class _DialogEditarQuimicoState extends State<_DialogEditarQuimico> {
   @override
   void initState() {
     super.initState();
-    _codigoController = TextEditingController(text: widget.quimico.codProdutoComp);
+    _codigoController =
+        TextEditingController(text: widget.quimico.codProdutoComp);
     _codRefController = TextEditingController(text: widget.quimico.codRef);
-    _descricaoController = TextEditingController(text: widget.quimico.descricao);
+    _descricaoController =
+        TextEditingController(text: widget.quimico.descricao);
     _padraoController = TextEditingController(text: widget.quimico.padrao);
-    _previstoController = TextEditingController(text: widget.quimico.previstoTolerancia);
+    _previstoController =
+        TextEditingController(text: widget.quimico.previstoTolerancia);
     _unidadeController = TextEditingController(text: widget.quimico.unidade);
   }
 
@@ -1241,6 +1294,3 @@ class _DialogEditarQuimicoState extends State<_DialogEditarQuimico> {
     );
   }
 }
-
-
-
