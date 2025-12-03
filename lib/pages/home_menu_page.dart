@@ -502,18 +502,18 @@ class _ArtigoListPageContentState extends State<ArtigoListPageContent> {
         scrollDirection: Axis.horizontal,
         child: DataTable(
           columns: const [
+            DataColumn(label: Text('Cod. Classif')),
+            DataColumn(label: Text('Cod Ref.')),
             DataColumn(label: Text('Artigo')),
             DataColumn(label: Text('Código')),
-            DataColumn(label: Text('Cod Ref.')),
-            DataColumn(label: Text('Cod. Classif')),
             DataColumn(label: Text('Status')),
             DataColumn(label: Text('Ações')),
           ],
           rows: artigosCadastrados.map((a) => DataRow(cells: [
+            DataCell(Text(a.codClassif.toString())),
+            DataCell(Text(a.opcaoPcp.toString())),
             DataCell(Text(a.nomeArtigo)),
             DataCell(Text(a.codProdutoRP)),
-            DataCell(Text(a.opcaoPcp.toString())),
-            DataCell(Text(a.codClassif.toString())),
             DataCell(_statusBadge(a.status)),
             DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
               IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () => _abrirDetalhe(artigo: a)),

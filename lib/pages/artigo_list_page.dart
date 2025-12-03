@@ -3,19 +3,19 @@ import 'artigo_detail_page.dart';
 
 /// Modelo de Artigo
 class Artigo {
+  final int codClassif;
   final String codProdutoRP;
   final String nomeArtigo;
   final String nomeRoteiro;
   final int opcaoPcp;
-  final int codClassif;
   final String status;
 
   Artigo({
+    required this.codClassif,
     required this.codProdutoRP,
     required this.nomeArtigo,
     required this.nomeRoteiro,
     required this.opcaoPcp,
-    required this.codClassif,
     required this.status,
   });
 
@@ -104,9 +104,8 @@ class _ArtigoListPageState extends State<ArtigoListPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: artigosCadastrados.isEmpty
-            ? _buildEmptyState()
-            : _buildDataTable(),
+        child:
+            artigosCadastrados.isEmpty ? _buildEmptyState() : _buildDataTable(),
       ),
     );
   }
@@ -140,21 +139,22 @@ class _ArtigoListPageState extends State<ArtigoListPage> {
         child: DataTable(
           columns: const [
             DataColumn(label: Text('Cod. Classif')),
-            DataColumn(label: Text('Cod Ref.')),
-            DataColumn(label: Text('Artigo')),
             DataColumn(label: Text('Código')),
+            DataColumn(label: Text('Artigo')),
+            DataColumn(label: Text('Cod Ref.')),
             DataColumn(label: Text('Status')),
             DataColumn(label: Text('Ações')),
           ],
           rows: artigosCadastrados.map((artigo) {
             return DataRow(
               cells: [
-                DataCell(Text(artigo.codClassif.toString())),
-                DataCell(Text(artigo.opcaoPcp.toString())),
-                DataCell(Text(artigo.nomeArtigo)),
-                DataCell(Text(artigo.codProdutoRP)),
-                DataCell(_buildStatusBadge(artigo.status)),
+                DataCell(Text(artigo.codClassif.toString())), // 4º
+                DataCell(Text(artigo.codProdutoRP)), // 1º
+                DataCell(Text(artigo.nomeArtigo)), // 2º
+                DataCell(Text(artigo.opcaoPcp.toString())), // 3º
+                DataCell(_buildStatusBadge(artigo.status)), // 5º
                 DataCell(
+                  // 6º
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -164,7 +164,8 @@ class _ArtigoListPageState extends State<ArtigoListPage> {
                         onPressed: () => _abrirDetalhe(artigo: artigo),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                        icon: const Icon(Icons.delete,
+                            size: 20, color: Colors.red),
                         tooltip: 'Remover',
                         onPressed: () => _remover(artigo),
                       ),
