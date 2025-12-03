@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "ultimo" "\0"
+            VALUE "FileDescription", "roteiro_produtivo" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "ultimo" "\0"
+            VALUE "InternalName", "roteiro_produtivo" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "ultimo.exe" "\0"
-            VALUE "ProductName", "ultimo" "\0"
+            VALUE "OriginalFilename", "roteiro_produtivo.exe" "\0"
+            VALUE "ProductName", "roteiro_produtivo" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

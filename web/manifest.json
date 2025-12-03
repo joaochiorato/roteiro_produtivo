@@ -1,6 +1,6 @@
 {
-    "name": "ultimo",
-    "short_name": "ultimo",
+    "name": "roteiro_produtivo",
+    "short_name": "roteiro_produtivo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
