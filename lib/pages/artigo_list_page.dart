@@ -27,7 +27,7 @@ final List<Artigo> artigosCadastrados = [
   Artigo(
     codProdutoRP: 'PRP001',
     nomeArtigo: 'QUARTZO',
-    nomeRoteiro: 'Roteiro QUARTZO PRP001',
+    nomeRoteiro: 'QUARTZO PRP001',
     opcaoPcp: 0,
     codClassif: 7,
     status: 'Ativo',

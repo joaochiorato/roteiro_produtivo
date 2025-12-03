@@ -30,7 +30,7 @@ final List<ArtigoRoteiroHeader> artigosRoteirosCadastrados = [
     codProdutoRP: 'PRP001',
     codRefRP: 0,
     nomeArtigo: 'QUARTZO',
-    nomeRoteiro: 'Roteiro QUARTZO PRP001',
+    nomeRoteiro: 'QUARTZO PRP001',
     opcaoPcp: 0,
     status: 'Ativo',
   ),
