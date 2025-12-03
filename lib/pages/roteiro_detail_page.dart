@@ -644,6 +644,30 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
   final _previstoController = TextEditingController();
   final _unidadeController = TextEditingController();
 
+  // Lista fixa de produtos químicos disponíveis para seleção
+  final List<Map<String, String>> _produtosQuimicos = const [
+    {'codigo': '89655', 'ref': '0', 'descricao': 'CROMO'},
+    {'codigo': '878599', 'ref': '0', 'descricao': 'SULFETO 50%'},
+    {'codigo': '89656', 'ref': '0', 'descricao': 'CAL'},
+    {'codigo': '74123', 'ref': '0', 'descricao': 'ÁCIDO FÓRMICO'},
+    {'codigo': '96321', 'ref': '0', 'descricao': 'ENZIMA DESENGRAXANTE'},
+    {'codigo': '85247', 'ref': '0', 'descricao': 'SEQUESTRANTE'},
+    {'codigo': '77411', 'ref': '0', 'descricao': 'SODA 50%'},
+    {'codigo': '66543', 'ref': '0', 'descricao': 'REDUTOR DE ODOR'},
+  ];
+
+  // Lista de unidades disponíveis para seleção
+  final List<String> _unidades = const [
+    'Kg',
+    'Mt',
+    'Tempo',
+    'PC',
+    'Uni',
+    'Lt',
+    'mL',
+    '%',
+  ];
+
   @override
   void dispose() {
     _codigoController.dispose();
@@ -660,7 +684,7 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
     final quimico = ProdutoQuimico(
       seq: widget.proximaSeq.toString(),
       codProdutoComp: _codigoController.text.trim().toUpperCase(),
-      codRef: '0',
+      codRef: _codRefController.text.trim(),
       descricao: _descricaoController.text.trim(),
       padrao: _padraoController.text.trim(),
       previstoTolerancia: _previstoController.text.trim(),
@@ -668,6 +692,59 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
     );
 
     Navigator.of(context).pop(quimico);
+  }
+
+  Future<void> _selecionarProdutoQuimico() async {
+    final selecionado = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (ctx) {
+        return SimpleDialog(
+          title: const Text('Selecionar produto químico'),
+          children: _produtosQuimicos.map((produto) {
+            final codigo = produto['codigo'] ?? '';
+            final ref = produto['ref'] ?? '';
+            final descricao = produto['descricao'] ?? '';
+            final label = '$codigo - $ref - $descricao';
+
+            return SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, produto),
+              child: Text(label),
+            );
+          }).toList(),
+        );
+      },
+    );
+
+    if (selecionado != null) {
+      setState(() {
+        _codigoController.text = (selecionado['codigo'] ?? '').toUpperCase();
+        _codRefController.text = selecionado['ref'] ?? '';
+        _descricaoController.text = selecionado['descricao'] ?? '';
+      });
+    }
+  }
+
+  Future<void> _selecionarUnidade() async {
+    final unidadeSelecionada = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        return SimpleDialog(
+          title: const Text('Selecionar unidade'),
+          children: _unidades.map((u) {
+            return SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, u),
+              child: Text(u),
+            );
+          }).toList(),
+        );
+      },
+    );
+
+    if (unidadeSelecionada != null) {
+      setState(() {
+        _unidadeController.text = unidadeSelecionada;
+      });
+    }
   }
 
   @override
@@ -681,14 +758,20 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
           children: [
             TextFormField(
               controller: _codigoController,
-              decoration: const InputDecoration(labelText: 'Cód. Prod.'),
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: 'Cód. Prod.',
+                suffixIcon: Icon(Icons.arrow_drop_down),
+              ),
               textCapitalization: TextCapitalization.characters,
+              onTap: _selecionarProdutoQuimico,
               validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _codRefController,
               decoration: const InputDecoration(labelText: 'Cód. Ref.'),
+              keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -709,7 +792,12 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _unidadeController,
-              decoration: const InputDecoration(labelText: 'Unidade'),
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: 'Unidade',
+                suffixIcon: Icon(Icons.arrow_drop_down),
+              ),
+              onTap: _selecionarUnidade,
             ),
           ],
         ),
@@ -727,3 +815,4 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
     );
   }
 }
+
