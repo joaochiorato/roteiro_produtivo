@@ -139,20 +139,20 @@ class _ArtigoListPageState extends State<ArtigoListPage> {
         scrollDirection: Axis.horizontal,
         child: DataTable(
           columns: const [
+            DataColumn(label: Text('Cod. Classif')),
+            DataColumn(label: Text('Cod Ref.')),
             DataColumn(label: Text('Artigo')),
             DataColumn(label: Text('Código')),
-            DataColumn(label: Text('Cod Ref.')),
-            DataColumn(label: Text('Cod. Classif')),
             DataColumn(label: Text('Status')),
             DataColumn(label: Text('Ações')),
           ],
           rows: artigosCadastrados.map((artigo) {
             return DataRow(
               cells: [
+                DataCell(Text(artigo.codClassif.toString())),
+                DataCell(Text(artigo.opcaoPcp.toString())),
                 DataCell(Text(artigo.nomeArtigo)),
                 DataCell(Text(artigo.codProdutoRP)),
-                DataCell(Text(artigo.opcaoPcp.toString())),
-                DataCell(Text(artigo.codClassif.toString())),
                 DataCell(_buildStatusBadge(artigo.status)),
                 DataCell(
                   Row(

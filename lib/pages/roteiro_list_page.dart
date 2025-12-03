@@ -50,6 +50,7 @@ class RoteiroConfiguracao {
   final String tempoEspera;
   final String tempoRepouso;
   final String tempoInicio;
+  final String observacao;
   final String status;
   final List<VariavelControle> variaveis;
   final List<ProdutoQuimico> quimicos;
@@ -63,6 +64,7 @@ class RoteiroConfiguracao {
     required this.tempoEspera,
     required this.tempoRepouso,
     required this.tempoInicio,
+    this.observacao = '',
     required this.status,
     this.variaveis = const [],
     this.quimicos = const [],

@@ -51,7 +51,7 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
     _tempoEsperaController = TextEditingController(text: roteiro?.tempoEspera ?? '00:00');
     _tempoRepousoController = TextEditingController(text: roteiro?.tempoRepouso ?? '00:00');
     _tempoInicioController = TextEditingController(text: roteiro?.tempoInicio ?? '00:00');
-    _observacaoController = TextEditingController();
+    _observacaoController = TextEditingController(text: roteiro?.observacao ?? '');
   }
 
   void _carregarVariaveisEQuimicos(int codOperacao) {
@@ -112,6 +112,7 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
       tempoEspera: _tempoEsperaController.text,
       tempoRepouso: _tempoRepousoController.text,
       tempoInicio: _tempoInicioController.text,
+      observacao: _observacaoController.text.trim(),
       status: _status,
       variaveis: _variaveis,
       quimicos: _quimicos,
@@ -190,6 +191,18 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
               _sectionTitle('Configuração de Tempos'),
               const SizedBox(height: 8),
               _buildTemposSection(),
+              const SizedBox(height: 24),
+
+              _sectionTitle('Observação'),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _observacaoController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Observação',
+                  alignLabelWithHint: true,
+                ),
+              ),
               const SizedBox(height: 24),
 
               _sectionTitle('Posto de Trabalho e Status'),
@@ -404,7 +417,8 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
                 DataColumn(label: Text('Seq', style: TextStyle(fontWeight: FontWeight.bold))),
                 DataColumn(label: Text('Descrição', style: TextStyle(fontWeight: FontWeight.bold))),
                 DataColumn(label: Text('Padrão', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Unidade', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(label: Text('Previsto/Toler.', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(label: Text('Unid', style: TextStyle(fontWeight: FontWeight.bold))),
                 DataColumn(label: Text('Ações', style: TextStyle(fontWeight: FontWeight.bold))),
               ],
               rows: _variaveis.map((v) {
@@ -413,6 +427,7 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
                       DataCell(Text(v.seq)),
                       DataCell(Text(v.descricao)),
                       DataCell(Text(v.padrao)),
+                      DataCell(Text(v.previstoTolerancia)),
                       DataCell(Text(v.unidade)),
                       DataCell(
                         IconButton(
@@ -490,10 +505,12 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
               horizontalMargin: 16,
               columns: const [
                 DataColumn(label: Text('Seq', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Código', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(label: Text('Cód. Prod.', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(label: Text('Cód. Ref.', style: TextStyle(fontWeight: FontWeight.bold))),
                 DataColumn(label: Text('Descrição', style: TextStyle(fontWeight: FontWeight.bold))),
                 DataColumn(label: Text('Padrão', style: TextStyle(fontWeight: FontWeight.bold))),
-                DataColumn(label: Text('Unidade', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(label: Text('Previsto/Toler.', style: TextStyle(fontWeight: FontWeight.bold))),
+                DataColumn(label: Text('Unid', style: TextStyle(fontWeight: FontWeight.bold))),
                 DataColumn(label: Text('Ações', style: TextStyle(fontWeight: FontWeight.bold))),
               ],
               rows: _quimicos.map((q) {
@@ -501,8 +518,10 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
                   cells: [
                     DataCell(Text(q.seq)),
                     DataCell(Text(q.codProdutoComp)),
+                    DataCell(Text(q.codRef)),
                     DataCell(Text(q.descricao)),
                     DataCell(Text(q.padrao)),
+                    DataCell(Text(q.previstoTolerancia)),
                     DataCell(Text(q.unidade)),
                     DataCell(
                       IconButton(
@@ -534,12 +553,14 @@ class _DialogAdicionarVariavelState extends State<_DialogAdicionarVariavel> {
   final _formKey = GlobalKey<FormState>();
   final _descricaoController = TextEditingController();
   final _padraoController = TextEditingController();
+  final _previstoController = TextEditingController();
   final _unidadeController = TextEditingController();
 
   @override
   void dispose() {
     _descricaoController.dispose();
     _padraoController.dispose();
+    _previstoController.dispose();
     _unidadeController.dispose();
     super.dispose();
   }
@@ -551,7 +572,7 @@ class _DialogAdicionarVariavelState extends State<_DialogAdicionarVariavel> {
       seq: widget.proximaSeq.toString(),
       descricao: _descricaoController.text.trim(),
       padrao: _padraoController.text.trim(),
-      previstoTolerancia: '',
+      previstoTolerancia: _previstoController.text.trim(),
       unidade: _unidadeController.text.trim(),
     );
 
@@ -576,6 +597,11 @@ class _DialogAdicionarVariavelState extends State<_DialogAdicionarVariavel> {
             TextFormField(
               controller: _padraoController,
               decoration: const InputDecoration(labelText: 'Padrão'),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _previstoController,
+              decoration: const InputDecoration(labelText: 'Previsto/Toler.'),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -612,8 +638,10 @@ class _DialogAdicionarQuimico extends StatefulWidget {
 class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
   final _formKey = GlobalKey<FormState>();
   final _codigoController = TextEditingController();
+  final _codRefController = TextEditingController();
   final _descricaoController = TextEditingController();
   final _padraoController = TextEditingController();
+  final _previstoController = TextEditingController();
   final _unidadeController = TextEditingController();
 
   @override
@@ -621,6 +649,7 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
     _codigoController.dispose();
     _descricaoController.dispose();
     _padraoController.dispose();
+    _previstoController.dispose();
     _unidadeController.dispose();
     super.dispose();
   }
@@ -634,7 +663,7 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
       codRef: '0',
       descricao: _descricaoController.text.trim(),
       padrao: _padraoController.text.trim(),
-      previstoTolerancia: '',
+      previstoTolerancia: _previstoController.text.trim(),
       unidade: _unidadeController.text.trim(),
     );
 
@@ -652,9 +681,14 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
           children: [
             TextFormField(
               controller: _codigoController,
-              decoration: const InputDecoration(labelText: 'Código'),
+              decoration: const InputDecoration(labelText: 'Cód. Prod.'),
               textCapitalization: TextCapitalization.characters,
               validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _codRefController,
+              decoration: const InputDecoration(labelText: 'Cód. Ref.'),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -666,6 +700,11 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
             TextFormField(
               controller: _padraoController,
               decoration: const InputDecoration(labelText: 'Padrão'),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _previstoController,
+              decoration: const InputDecoration(labelText: 'Previsto/Toler.'),
             ),
             const SizedBox(height: 16),
             TextFormField(
