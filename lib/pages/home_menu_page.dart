@@ -813,18 +813,19 @@ class _ArtigoRoteiroListPageContentState extends State<ArtigoRoteiroListPageCont
     if (result == null) return;
     setState(() {
       if (header == null) {
-        final idx = artigosRoteirosCadastrados.indexWhere((h) => h.codProdutoRP == result.codProdutoRP);
+        // Novo vínculo: apenas adiciona à lista,
+        // preservando os vínculos já existentes.
+        artigosRoteirosCadastrados.add(result);
+      } else {
+        // Edição: atualiza apenas o item daquela linha.
+        final idx = artigosRoteirosCadastrados.indexOf(header);
         if (idx >= 0) {
           artigosRoteirosCadastrados[idx] = result;
-        } else {
-          artigosRoteirosCadastrados.add(result);
         }
-      } else {
-        final idx = artigosRoteirosCadastrados.indexOf(header);
-        artigosRoteirosCadastrados[idx] = result;
       }
     });
   }
+
 
   void _remover(ArtigoRoteiroHeader h) {
     showDialog(

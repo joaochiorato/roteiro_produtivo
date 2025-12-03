@@ -21,16 +21,30 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
   late TextEditingController _codClassifController;
   String _status = 'Ativo';
 
+  // Lista de produtos disponíveis para seleção no campo Código
+  final List<Map<String, String>> _produtosDisponiveis = const [
+    {'codigo': 'PRP001', 'descricao': 'BLACK'},
+    {'codigo': 'PRP002', 'descricao': 'WHITE PEROLA'},
+    {'codigo': 'PRP003', 'descricao': 'BLACK BMW'},
+  ];
+
   @override
   void initState() {
     super.initState();
     final artigo = widget.artigo;
 
-    _codProdutoRPController = TextEditingController(text: artigo?.codProdutoRP ?? '');
-    _nomeArtigoController = TextEditingController(text: artigo?.nomeArtigo ?? '');
-    _nomeRoteiroController = TextEditingController(text: artigo?.nomeRoteiro ?? '');
-    _opcaoPcpController = TextEditingController(text: artigo?.opcaoPcp.toString() ?? '0');
-    _codClassifController = TextEditingController(text: artigo?.codClassif.toString() ?? '');
+    _codProdutoRPController =
+        TextEditingController(text: artigo?.codProdutoRP ?? '');
+    _nomeArtigoController =
+        TextEditingController(text: artigo?.nomeArtigo ?? '');
+    _nomeRoteiroController =
+        TextEditingController(text: artigo?.nomeRoteiro ?? '');
+    _opcaoPcpController = TextEditingController(
+      text: artigo != null ? artigo.opcaoPcp.toString() : '0',
+    );
+    _codClassifController = TextEditingController(
+      text: artigo != null ? artigo.codClassif.toString() : '',
+    );
     _status = artigo?.status ?? 'Ativo';
   }
 
@@ -57,6 +71,34 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
     );
 
     Navigator.of(context).pop(novo);
+  }
+
+  Future<void> _selecionarProdutoCodigo() async {
+    final selecionado = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (ctx) {
+        return SimpleDialog(
+          title: const Text('Selecionar produto'),
+          children: _produtosDisponiveis.map((produto) {
+            final codigo = produto['codigo'] ?? '';
+            final descricao = produto['descricao'] ?? '';
+            final label = '$codigo - $descricao';
+
+            return SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, produto),
+              child: Text(label),
+            );
+          }).toList(),
+        );
+      },
+    );
+
+    if (selecionado != null) {
+      setState(() {
+        _codProdutoRPController.text =
+            (selecionado['codigo'] ?? '').toUpperCase();
+      });
+    }
   }
 
   @override
@@ -95,7 +137,8 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
                         hintText: 'Ex: 7',
                       ),
                       keyboardType: TextInputType.number,
-                      validator: (v) => (v == null || v.isEmpty) ? 'Informe o código.' : null,
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Informe o código.' : null,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -119,12 +162,16 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
                   Expanded(
                     child: TextFormField(
                       controller: _codProdutoRPController,
+                      readOnly: true,
                       decoration: const InputDecoration(
                         labelText: 'Código',
                         hintText: 'Ex: PRP001',
+                        suffixIcon: Icon(Icons.arrow_drop_down),
                       ),
                       textCapitalization: TextCapitalization.characters,
-                      validator: (v) => (v == null || v.isEmpty) ? 'Informe o código.' : null,
+                      onTap: _selecionarProdutoCodigo,
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Informe o código.' : null,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -137,7 +184,8 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
                         hintText: 'Ex: QUARTZO',
                       ),
                       textCapitalization: TextCapitalization.characters,
-                      validator: (v) => (v == null || v.isEmpty) ? 'Informe o nome.' : null,
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Informe o nome.' : null,
                     ),
                   ),
                 ],

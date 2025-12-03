@@ -56,18 +56,15 @@ class _ArtigoRoteiroListPageState extends State<ArtigoRoteiroListPage> {
 
     setState(() {
       if (header == null) {
-        // Verifica se já existe
-        final existente = artigosRoteirosCadastrados.indexWhere(
-          (h) => h.codProdutoRP == result.codProdutoRP,
-        );
-        if (existente >= 0) {
-          artigosRoteirosCadastrados[existente] = result;
-        } else {
-          artigosRoteirosCadastrados.add(result);
-        }
+        // Novo vínculo: apenas adiciona à lista,
+        // preservando os vínculos já existentes.
+        artigosRoteirosCadastrados.add(result);
       } else {
+        // Edição: atualiza apenas o item daquela linha.
         final idx = artigosRoteirosCadastrados.indexOf(header);
-        artigosRoteirosCadastrados[idx] = result;
+        if (idx >= 0) {
+          artigosRoteirosCadastrados[idx] = result;
+        }
       }
     });
   }
