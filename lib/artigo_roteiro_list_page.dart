@@ -28,7 +28,7 @@ final List<ArtigoRoteiroHeader> artigoRoteiroVinculos = [
     codProdutoRP: 'PRP001',
     codRefRP: 0,
     nomeArtigo: 'QUARTZO',
-    nomeRoteiro: 'Roteiro QUARTZO PRP001',
+    nomeRoteiro: 'QUARTZO PRP001',
     opcaoPcp: 0,
     status: 'Ativo',
   ),

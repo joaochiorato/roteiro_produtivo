@@ -166,7 +166,7 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
                   labelText: 'Roteiro Produtivo',
                   border: OutlineInputBorder(),
                   isDense: true,
-                  hintText: 'Ex: Roteiro QUARTZO PRP001',
+                  hintText: 'Ex: QUARTZO PRP001',
                 ),
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Informe o nome do roteiro.'

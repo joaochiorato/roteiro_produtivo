@@ -128,24 +128,34 @@ final Map<int, List<ProdutoQuimico>> quimicosPorOperacaoMock = {
   1000: [
     ProdutoQuimico(
       seq: '1',
-      codProdutoComp: 'QUI001',
+      codProdutoComp: '89396',
       codRef: '0',
-      descricao: 'Tensoativo Tipo A',
-      padrao: '0.5%',
+      descricao: 'CAL VIRGEM 20 KG',
+      padrao: '',
       previstoTolerancia: '',
       unidade: 'kg',
     ),
     ProdutoQuimico(
       seq: '2',
-      codProdutoComp: 'QUI002',
+      codProdutoComp: '95001',
       codRef: '0',
-      descricao: 'Bactericida',
-      padrao: '0.1%',
+      descricao: 'SULFETO DE SODIO 60%',
+      padrao: '',
       previstoTolerancia: '',
-      unidade: 'L',
+      unidade: 'kg',
+    ),
+    ProdutoQuimico(
+      seq: '3',
+      codProdutoComp: '95209',
+      codRef: '0',
+      descricao: 'TENSOATIVO',
+      padrao: '',
+      previstoTolerancia: '',
+      unidade: 'kg',
     ),
   ],
 };
+
 
 /// Lista global de roteiros configurados
 final List<RoteiroConfiguracao> roteirosConfigurados = [
@@ -153,7 +163,7 @@ final List<RoteiroConfiguracao> roteirosConfigurados = [
     codOperacao: 1000,
     descOperacao: 'REMOLHO',
     codTipoMv: 'C901',
-    codPosto: 'ENX',
+    codPosto: 'RML',
     tempoSetup: '00:00',
     tempoEspera: '00:00',
     tempoRepouso: '00:00',
@@ -166,7 +176,7 @@ final List<RoteiroConfiguracao> roteirosConfigurados = [
     codOperacao: 1001,
     descOperacao: 'ENXUGADEIRA',
     codTipoMv: 'C902',
-    codPosto: 'RML',
+    codPosto: 'ENX',
     tempoSetup: '00:00',
     tempoEspera: '00:00',
     tempoRepouso: '00:00',
@@ -230,7 +240,8 @@ class _RoteiroListPageState extends State<RoteiroListPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirmar exclusão'),
-        content: Text('Remover configuração de roteiro "${roteiro.descOperacao}"?'),
+        content:
+            Text('Remover configuração de roteiro "${roteiro.descOperacao}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -241,7 +252,8 @@ class _RoteiroListPageState extends State<RoteiroListPage> {
               Navigator.pop(ctx);
               setState(() => roteirosConfigurados.remove(roteiro));
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Configuração de roteiro removida.')),
+                const SnackBar(
+                    content: Text('Configuração de roteiro removida.')),
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -332,7 +344,8 @@ class _RoteiroListPageState extends State<RoteiroListPage> {
                         onPressed: () => _abrirCadastro(roteiro: roteiro),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                        icon: const Icon(Icons.delete,
+                            size: 20, color: Colors.red),
                         tooltip: 'Remover',
                         onPressed: () => _remover(roteiro),
                       ),

@@ -430,9 +430,18 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
                       DataCell(Text(v.previstoTolerancia)),
                       DataCell(Text(v.unidade)),
                       DataCell(
-                        IconButton(
-                          icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                          onPressed: () => setState(() => _variaveis.remove(v)),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, size: 18),
+                              onPressed: () => _editarVariavel(v),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                              onPressed: () => setState(() => _variaveis.remove(v)),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -524,9 +533,18 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
                     DataCell(Text(q.previstoTolerancia)),
                     DataCell(Text(q.unidade)),
                     DataCell(
-                      IconButton(
-                        icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                        onPressed: () => setState(() => _quimicos.remove(q)),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 18),
+                            onPressed: () => _editarQuimico(q),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                            onPressed: () => setState(() => _quimicos.remove(q)),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -536,6 +554,37 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
           ),
       ],
     );
+  }
+  void _editarVariavel(VariavelControle variavel) async {
+    final variavelEditada = await showDialog<VariavelControle>(
+      context: context,
+      builder: (context) => _DialogEditarVariavel(variavel: variavel),
+    );
+
+    if (variavelEditada != null) {
+      setState(() {
+        final idx = _variaveis.indexOf(variavel);
+        if (idx >= 0) {
+          _variaveis[idx] = variavelEditada;
+        }
+      });
+    }
+  }
+
+  void _editarQuimico(ProdutoQuimico quimico) async {
+    final quimicoEditado = await showDialog<ProdutoQuimico>(
+      context: context,
+      builder: (context) => _DialogEditarQuimico(quimico: quimico),
+    );
+
+    if (quimicoEditado != null) {
+      setState(() {
+        final idx = _quimicos.indexOf(quimico);
+        if (idx >= 0) {
+          _quimicos[idx] = quimicoEditado;
+        }
+      });
+    }
   }
 }
 
@@ -555,6 +604,18 @@ class _DialogAdicionarVariavelState extends State<_DialogAdicionarVariavel> {
   final _padraoController = TextEditingController();
   final _previstoController = TextEditingController();
   final _unidadeController = TextEditingController();
+
+  // Lista de unidades disponíveis para seleção
+  final List<String> _unidades = const [
+    'Kg',
+    'Mt',
+    'Tempo',
+    'PC',
+    'Uni',
+    'Lt',
+    'mL',
+    '%',
+  ];
 
   @override
   void dispose() {
@@ -577,6 +638,29 @@ class _DialogAdicionarVariavelState extends State<_DialogAdicionarVariavel> {
     );
 
     Navigator.of(context).pop(variavel);
+  }
+
+  Future<void> _selecionarUnidade() async {
+    final unidadeSelecionada = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        return SimpleDialog(
+          title: const Text('Selecionar unidade'),
+          children: _unidades.map((u) {
+            return SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, u),
+              child: Text(u),
+            );
+          }).toList(),
+        );
+      },
+    );
+
+    if (unidadeSelecionada != null) {
+      setState(() {
+        _unidadeController.text = unidadeSelecionada;
+      });
+    }
   }
 
   @override
@@ -606,7 +690,12 @@ class _DialogAdicionarVariavelState extends State<_DialogAdicionarVariavel> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _unidadeController,
-              decoration: const InputDecoration(labelText: 'Unidade'),
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: 'Unidade',
+                suffixIcon: Icon(Icons.arrow_drop_down),
+              ),
+              onTap: _selecionarUnidade,
             ),
           ],
         ),
@@ -624,7 +713,6 @@ class _DialogAdicionarVariavelState extends State<_DialogAdicionarVariavel> {
     );
   }
 }
-
 /// Dialog para adicionar químico
 class _DialogAdicionarQuimico extends StatefulWidget {
   final int proximaSeq;
@@ -646,9 +734,9 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
 
   // Lista fixa de produtos químicos disponíveis para seleção
   final List<Map<String, String>> _produtosQuimicos = const [
-    {'codigo': '89655', 'ref': '0', 'descricao': 'CROMO'},
-    {'codigo': '878599', 'ref': '0', 'descricao': 'SULFETO 50%'},
-    {'codigo': '89656', 'ref': '0', 'descricao': 'CAL'},
+    {'codigo': '89396', 'ref': '0', 'descricao': 'CAL VIRGEM 20 KG'},
+    {'codigo': '95001', 'ref': '0', 'descricao': 'SULFETO DE SODIO 60%'},
+    {'codigo': '95209', 'ref': '0', 'descricao': 'TENSOATIVO'},
     {'codigo': '74123', 'ref': '0', 'descricao': 'ÁCIDO FÓRMICO'},
     {'codigo': '96321', 'ref': '0', 'descricao': 'ENZIMA DESENGRAXANTE'},
     {'codigo': '85247', 'ref': '0', 'descricao': 'SEQUESTRANTE'},
@@ -815,4 +903,344 @@ class _DialogAdicionarQuimicoState extends State<_DialogAdicionarQuimico> {
     );
   }
 }
+
+/// Dialog para editar variável
+class _DialogEditarVariavel extends StatefulWidget {
+  final VariavelControle variavel;
+
+  const _DialogEditarVariavel({required this.variavel});
+
+  @override
+  State<_DialogEditarVariavel> createState() => _DialogEditarVariavelState();
+}
+
+class _DialogEditarVariavelState extends State<_DialogEditarVariavel> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _descricaoController;
+  late TextEditingController _padraoController;
+  late TextEditingController _previstoController;
+  late TextEditingController _unidadeController;
+
+  // Lista de unidades disponíveis para seleção
+  final List<String> _unidades = const [
+    'Kg',
+    'Mt',
+    'Tempo',
+    'PC',
+    'Uni',
+    'Lt',
+    'mL',
+    '%',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _descricaoController = TextEditingController(text: widget.variavel.descricao);
+    _padraoController = TextEditingController(text: widget.variavel.padrao);
+    _previstoController = TextEditingController(text: widget.variavel.previstoTolerancia);
+    _unidadeController = TextEditingController(text: widget.variavel.unidade);
+  }
+
+  @override
+  void dispose() {
+    _descricaoController.dispose();
+    _padraoController.dispose();
+    _previstoController.dispose();
+    _unidadeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selecionarUnidade() async {
+    final unidadeSelecionada = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        return SimpleDialog(
+          title: const Text('Selecionar unidade'),
+          children: _unidades.map((u) {
+            return SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, u),
+              child: Text(u),
+            );
+          }).toList(),
+        );
+      },
+    );
+
+    if (unidadeSelecionada != null) {
+      setState(() {
+        _unidadeController.text = unidadeSelecionada;
+      });
+    }
+  }
+
+  void _salvar() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final variavelAtualizada = VariavelControle(
+      seq: widget.variavel.seq,
+      descricao: _descricaoController.text.trim(),
+      padrao: _padraoController.text.trim(),
+      previstoTolerancia: _previstoController.text.trim(),
+      unidade: _unidadeController.text.trim(),
+    );
+
+    Navigator.of(context).pop(variavelAtualizada);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Editar Variável'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _descricaoController,
+              decoration: const InputDecoration(labelText: 'Descrição'),
+              validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _padraoController,
+              decoration: const InputDecoration(labelText: 'Padrão'),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _previstoController,
+              decoration: const InputDecoration(labelText: 'Previsto/Toler.'),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _unidadeController,
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: 'Unidade',
+                suffixIcon: Icon(Icons.arrow_drop_down),
+              ),
+              onTap: _selecionarUnidade,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: _salvar,
+          child: const Text('Salvar'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Dialog para editar produto químico
+class _DialogEditarQuimico extends StatefulWidget {
+  final ProdutoQuimico quimico;
+
+  const _DialogEditarQuimico({required this.quimico});
+
+  @override
+  State<_DialogEditarQuimico> createState() => _DialogEditarQuimicoState();
+}
+
+class _DialogEditarQuimicoState extends State<_DialogEditarQuimico> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _codigoController;
+  late TextEditingController _codRefController;
+  late TextEditingController _descricaoController;
+  late TextEditingController _padraoController;
+  late TextEditingController _previstoController;
+  late TextEditingController _unidadeController;
+
+  // Lista fixa de produtos químicos disponíveis para seleção
+  final List<Map<String, String>> _produtosQuimicos = const [
+    {'codigo': '89396', 'ref': '0', 'descricao': 'CAL VIRGEM 20 KG'},
+    {'codigo': '95001', 'ref': '0', 'descricao': 'SULFETO DE SODIO 60%'},
+    {'codigo': '95209', 'ref': '0', 'descricao': 'TENSOATIVO'},
+    {'codigo': '74123', 'ref': '0', 'descricao': 'ÁCIDO FÓRMICO'},
+    {'codigo': '96321', 'ref': '0', 'descricao': 'ENZIMA DESENGRAXANTE'},
+    {'codigo': '85247', 'ref': '0', 'descricao': 'SEQUESTRANTE'},
+    {'codigo': '77411', 'ref': '0', 'descricao': 'SODA 50%'},
+    {'codigo': '66543', 'ref': '0', 'descricao': 'REDUTOR DE ODOR'},
+  ];
+
+  // Lista de unidades disponíveis para seleção
+  final List<String> _unidades = const [
+    'Kg',
+    'Mt',
+    'Tempo',
+    'PC',
+    'Uni',
+    'Lt',
+    'mL',
+    '%',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _codigoController = TextEditingController(text: widget.quimico.codProdutoComp);
+    _codRefController = TextEditingController(text: widget.quimico.codRef);
+    _descricaoController = TextEditingController(text: widget.quimico.descricao);
+    _padraoController = TextEditingController(text: widget.quimico.padrao);
+    _previstoController = TextEditingController(text: widget.quimico.previstoTolerancia);
+    _unidadeController = TextEditingController(text: widget.quimico.unidade);
+  }
+
+  @override
+  void dispose() {
+    _codigoController.dispose();
+    _codRefController.dispose();
+    _descricaoController.dispose();
+    _padraoController.dispose();
+    _previstoController.dispose();
+    _unidadeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selecionarProdutoQuimico() async {
+    final selecionado = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (ctx) {
+        return SimpleDialog(
+          title: const Text('Selecionar produto químico'),
+          children: _produtosQuimicos.map((produto) {
+            final codigo = produto['codigo'] ?? '';
+            final ref = produto['ref'] ?? '';
+            final descricao = produto['descricao'] ?? '';
+            final label = '$codigo - $ref - $descricao';
+
+            return SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, produto),
+              child: Text(label),
+            );
+          }).toList(),
+        );
+      },
+    );
+
+    if (selecionado != null) {
+      setState(() {
+        _codigoController.text = (selecionado['codigo'] ?? '').toUpperCase();
+        _codRefController.text = selecionado['ref'] ?? '';
+        _descricaoController.text = selecionado['descricao'] ?? '';
+      });
+    }
+  }
+
+  Future<void> _selecionarUnidade() async {
+    final unidadeSelecionada = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        return SimpleDialog(
+          title: const Text('Selecionar unidade'),
+          children: _unidades.map((u) {
+            return SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, u),
+              child: Text(u),
+            );
+          }).toList(),
+        );
+      },
+    );
+
+    if (unidadeSelecionada != null) {
+      setState(() {
+        _unidadeController.text = unidadeSelecionada;
+      });
+    }
+  }
+
+  void _salvar() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final quimicoAtualizado = ProdutoQuimico(
+      seq: widget.quimico.seq,
+      codProdutoComp: _codigoController.text.trim().toUpperCase(),
+      codRef: _codRefController.text.trim(),
+      descricao: _descricaoController.text.trim(),
+      padrao: _padraoController.text.trim(),
+      previstoTolerancia: _previstoController.text.trim(),
+      unidade: _unidadeController.text.trim(),
+    );
+
+    Navigator.of(context).pop(quimicoAtualizado);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Editar Produto Químico'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _codigoController,
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: 'Cód. Prod.',
+                suffixIcon: Icon(Icons.arrow_drop_down),
+              ),
+              textCapitalization: TextCapitalization.characters,
+              onTap: _selecionarProdutoQuimico,
+              validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _codRefController,
+              decoration: const InputDecoration(labelText: 'Cód. Ref.'),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _descricaoController,
+              decoration: const InputDecoration(labelText: 'Descrição'),
+              validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _padraoController,
+              decoration: const InputDecoration(labelText: 'Padrão'),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _previstoController,
+              decoration: const InputDecoration(labelText: 'Previsto/Toler.'),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _unidadeController,
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: 'Unidade',
+                suffixIcon: Icon(Icons.arrow_drop_down),
+              ),
+              onTap: _selecionarUnidade,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: _salvar,
+          child: const Text('Salvar'),
+        ),
+      ],
+    );
+  }
+}
+
+
 
