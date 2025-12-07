@@ -43,3 +43,5 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+test/Teste De Mesa Apontamento Curtume.xlsx
+Teste De Mesa Apontamento Curtume(Teste de Mesa).csv
