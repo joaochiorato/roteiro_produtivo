@@ -15,26 +15,19 @@ class Database {
   static final List<Artigo> artigos = [
     Artigo(
       codProdutoRP: 'PRP001',
-      nomeArtigo: 'COURO SEMI ACABADO',
-      descArtigo: 'QUARTZO',
+      nomeArtigo: 'COURO WET BLUE',
+      descArtigo: 'QUARTZO CHOKWANG',
       opcaoPcp: 0,
       codClassif: 1,
       status: 'Ativo',
     ),
-    Artigo(
-      codProdutoRP: 'PRP001',
-      nomeArtigo: 'COURO SEMI ACABADO',
-      descArtigo: 'QUARTZO CHOKWANG',
-      opcaoPcp: 0,
-      codClassif: 2,
-      status: 'Ativo',
-    ),
+
   ];
 
   // ==================== TABELA: ARTIGO_ROTEIRO_HEADER ====================
   static final List<ArtigoRoteiroHeader> artigoRoteiroHeaders = [
     ArtigoRoteiroHeader(
-      codClassif: 7,
+      codClassif: 1,
       codProdutoRP: 'PRP001',
       codRefRP: 0,
       nomeArtigo: 'COURO SEMI ACABADO',
@@ -49,7 +42,7 @@ class Database {
     RoteiroConfiguracao(
       codOperacao: 1000,
       descOperacao: 'REMOLHO',
-      codTipoMv: 'C901',
+      codTipoMv: 'C900',
       codPosto: 'RML',
       tempoSetup: '00:00',
       tempoEspera: '00:00',
@@ -60,7 +53,7 @@ class Database {
     RoteiroConfiguracao(
       codOperacao: 1001,
       descOperacao: 'ENXUGADEIRA',
-      codTipoMv: 'C902',
+      codTipoMv: 'C901',
       codPosto: 'ENX',
       tempoSetup: '00:00',
       tempoEspera: '00:00',
@@ -71,7 +64,7 @@ class Database {
     RoteiroConfiguracao(
       codOperacao: 1002,
       descOperacao: 'DIVISORA',
-      codTipoMv: 'C903',
+      codTipoMv: 'C902',
       codPosto: 'DIV',
       tempoSetup: '00:00',
       tempoEspera: '00:00',
@@ -82,7 +75,7 @@ class Database {
     RoteiroConfiguracao(
       codOperacao: 1003,
       descOperacao: 'REBAIXADEIRA',
-      codTipoMv: 'C904',
+      codTipoMv: 'C903',
       codPosto: 'RBX',
       tempoSetup: '00:00',
       tempoEspera: '00:00',
@@ -93,7 +86,7 @@ class Database {
     RoteiroConfiguracao(
       codOperacao: 1004,
       descOperacao: 'REFILA',
-      codTipoMv: 'C905',
+      codTipoMv: 'C904',
       codPosto: 'RFL',
       tempoSetup: '00:00',
       tempoEspera: '00:00',
@@ -159,31 +152,31 @@ class Database {
     Operacao(
       codOperacao: 1000,
       descOperacao: 'REMOLHO',
-      codTipoMv: 'C901',
+      codTipoMv: 'C900',
       status: 'Ativo',
     ),
     Operacao(
       codOperacao: 1001,
       descOperacao: 'ENXUGADEIRA',
-      codTipoMv: 'C902',
+      codTipoMv: 'C901',
       status: 'Ativo',
     ),
     Operacao(
       codOperacao: 1002,
       descOperacao: 'DIVISORA',
-      codTipoMv: 'C903',
+      codTipoMv: 'C902',
       status: 'Ativo',
     ),
     Operacao(
       codOperacao: 1003,
       descOperacao: 'REBAIXADEIRA',
-      codTipoMv: 'C904',
+      codTipoMv: 'C903',
       status: 'Ativo',
     ),
     Operacao(
       codOperacao: 1004,
       descOperacao: 'REFILA',
-      codTipoMv: 'C905',
+      codTipoMv: 'C904',
       status: 'Ativo',
     ),
   ];
@@ -227,22 +220,22 @@ class Database {
       VariavelControle(
         seq: '1',
         descricao: 'Volume de Água',
-        previstoTolerancia: '100% peso líquido do lote',
-        padrao: '100',
+        previstoTolerancia: '100',
+        padrao: '100% peso líquido do lote',
         unidade: 'Litros',
       ),
       VariavelControle(
         seq: '2',
         descricao: 'Temperatura da Água (dentro do fulão remolho)',
-        previstoTolerancia: '60 +/- 10',
-        padrao: '60',
+        previstoTolerancia: '60',
+        padrao: '60 +/- 10',
         unidade: '°C',
       ),
       VariavelControle(
         seq: '3',
         descricao: 'Tensoativo',
-        previstoTolerancia: '5 +/- 0.200',
-        padrao: '5',
+        previstoTolerancia: '5',
+        padrao: '5 +/- 0.200',
         unidade: 'Litros',
       ),
     ],
@@ -251,29 +244,29 @@ class Database {
       VariavelControle(
         seq: '1',
         descricao: 'Pressão do Rolo (1º manômetro)',
-        previstoTolerancia: '40 a 110',
-        padrao: '75',
+        previstoTolerancia: '75',
+        padrao: '40 a 110',
         unidade: 'Bar.',
       ),
       VariavelControle(
         seq: '2',
         descricao: 'Pressão do Rolo (2º e 3º manômetro)',
-        previstoTolerancia: '60 a 110',
-        padrao: '85',
+        previstoTolerancia: '85',
+        padrao: '60 a 110',
         unidade: 'Bar.',
       ),
       VariavelControle(
         seq: '3',
         descricao: 'Velocidade do Feltro',
-        previstoTolerancia: '15 +/- 3',
-        padrao: '15',
+        previstoTolerancia: '15',
+        padrao: '15 +/- 3',
         unidade: 'mt/min.',
       ),
       VariavelControle(
         seq: '4',
         descricao: 'Velocidade do Tapete',
-        previstoTolerancia: '13 +/- 3',
-        padrao: '13',
+        previstoTolerancia: '13',
+        padrao: '13 +/- 3',
         unidade: 'mt/min.',
       ),
     ],
@@ -282,29 +275,29 @@ class Database {
       VariavelControle(
         seq: '1',
         descricao: 'Velocidade da Máquina',
-        previstoTolerancia: '23 +/- 2',
-        padrao: '23',
+        previstoTolerancia: '23',
+        padrao: '23 +/- 2',
         unidade: 'metro/minuto',
       ),
       VariavelControle(
         seq: '2',
         descricao: 'Distância da Navalha',
-        previstoTolerancia: '8,0 a 8,5',
-        padrao: '8.25',
+        previstoTolerancia: '8.25',
+        padrao: '23 +/- 2',
         unidade: 'mm',
       ),
       VariavelControle(
         seq: '3',
         descricao: 'Fio da Navalha Inferior',
-        previstoTolerancia: '5,0 +/- 0,5',
-        padrao: '5.0',
+        previstoTolerancia: '5.0',
+        padrao: '5,0 +/- 0,5',
         unidade: 'mm',
       ),
       VariavelControle(
         seq: '4',
         descricao: 'Fio da Navalha Superior',
-        previstoTolerancia: '6,0 +/- 0,5',
-        padrao: '6.0',
+        previstoTolerancia: '6.0',
+        padrao: '6,0 +/- 0,5',
         unidade: 'mm',
       ),
     ],
@@ -313,15 +306,15 @@ class Database {
       VariavelControle(
         seq: '1',
         descricao: 'Velocidade do Rolo de Transporte',
-        previstoTolerancia: '10/12',
-        padrao: '11',
+        previstoTolerancia: '11',
+        padrao: '10/12',
         unidade: '',
       ),
       VariavelControle(
         seq: '2',
         descricao: 'Espessura e rebaixe',
-        previstoTolerancia: '1.2/1.3+1.2',
-        padrao: '',
+        previstoTolerancia: '1.3',
+        padrao: '1.2/1.3',
         unidade: '',
       ),
     ],
@@ -360,8 +353,8 @@ class Database {
         codProdutoComp: '89396',
         codRef: '0',
         descricao: 'CAL VIRGEM 20 KG',
-        padrao: '8.0',
-        previstoTolerancia: '8.0 ± 0.5',
+        padrao: '8.0 ± 0.5',
+        previstoTolerancia: '8.0',
         unidade: 'kg',
       ),
       ProdutoQuimico(
@@ -369,8 +362,8 @@ class Database {
         codProdutoComp: '95001',
         codRef: '0',
         descricao: 'SULFETO DE SODIO 60%',
-        padrao: '2.5',
-        previstoTolerancia: '2.5 ± 0.3',
+        padrao: '2.5 ± 0.3',
+        previstoTolerancia: '2.5',
         unidade: 'kg',
       ),
       ProdutoQuimico(
@@ -378,8 +371,8 @@ class Database {
         codProdutoComp: '95209',
         codRef: '0',
         descricao: 'TENSOATIVO',
-        padrao: '0.5',
-        previstoTolerancia: '0.5 ± 0.1',
+        padrao: '0.5 ± 0.1',
+        previstoTolerancia: '0.5',
         unidade: 'kg',
       ),
     ],
@@ -387,9 +380,9 @@ class Database {
 
   // ==================== PRODUTOS DISPONÍVEIS ====================
   static final List<Map<String, String>> produtosDisponiveis = [
-    {'codigo': 'PRP001', 'descricao': 'COURO SEMI ACABADO'},
-    {'codigo': 'PRP002', 'descricao': 'COURO ACABADO'},
-    {'codigo': 'PRP003', 'descricao': 'COURO WET BLUE'},
+    {'codigo': 'PRP001', 'descricao': 'COURO WET BLUE'},
+    {'codigo': 'PRP002', 'descricao': 'COURO SEMI ACABADO'},
+    {'codigo': 'PRP003', 'descricao': 'COURO ACABADO'},
   ];
 
   /// Limpa todos os dados (útil para testes)
@@ -413,7 +406,7 @@ class Database {
       nomeArtigo: 'COURO SEMI ACABADO',
       descArtigo: '',
       opcaoPcp: 0,
-      codClassif: 7,
+      codClassif: 1,
       status: 'Ativo',
     ));
 

@@ -3,15 +3,15 @@ import '../models/operacao.dart';
 
 /// Lista de Tipos de Movimento disponíveis
 final List<Map<String, String>> tiposMovimento = [
-  {'codigo': 'C901', 'descricao': 'C901 - Remolho'},
-  {'codigo': 'C902', 'descricao': 'C902 - Enxugadeira'},
-  {'codigo': 'C903', 'descricao': 'C903 - Divisora'},
-  {'codigo': 'C904', 'descricao': 'C904 - Rebaixadeira'},
-  {'codigo': 'C905', 'descricao': 'C905 - Curtimento'},
-  {'codigo': 'C906', 'descricao': 'C906 - Recurtimento'},
-  {'codigo': 'C907', 'descricao': 'C907 - Secagem'},
-  {'codigo': 'C908', 'descricao': 'C908 - Acabamento'},
-  {'codigo': 'C909', 'descricao': 'C909 - Expedição'},
+  {'codigo': 'C900', 'descricao': 'C900 - Remolho'},
+  {'codigo': 'C901', 'descricao': 'C901 - Enxugadeira'},
+  {'codigo': 'C902', 'descricao': 'C902 - Divisora'},
+  {'codigo': 'C903', 'descricao': 'C903 - Rebaixadeira'},
+  {'codigo': 'C904', 'descricao': 'C904 - Curtimento'},
+  {'codigo': 'C905', 'descricao': 'C905 - Recurtimento'},
+  {'codigo': 'C906', 'descricao': 'C906 - Secagem'},
+  {'codigo': 'C907', 'descricao': 'C907 - Acabamento'},
+  {'codigo': 'C908', 'descricao': 'C908 - Expedição'},
 ];
 
 /// Página de cadastro/edição de Operação
