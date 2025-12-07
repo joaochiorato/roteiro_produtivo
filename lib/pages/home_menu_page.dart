@@ -1005,7 +1005,7 @@ class _ArtigoRoteiroListPageContentState
         scrollDirection: Axis.horizontal,
         child: DataTable(
           columns: const [
-            DataColumn(label: Text('Cód. Artigo')),
+            DataColumn(label: Text('Cod. Artigo')),
             DataColumn(label: Text('Nome Artigo')),
             DataColumn(label: Text('Status')),
             DataColumn(label: Text('Ações')),

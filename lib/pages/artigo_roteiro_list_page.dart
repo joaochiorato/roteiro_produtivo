@@ -123,7 +123,7 @@ class _ArtigoRoteiroListPageState extends State<ArtigoRoteiroListPage> {
           constraints: BoxConstraints(minWidth: tableMinWidth),
           child: DataTable(
             columns: const [
-              DataColumn(label: Text('Cód. Artigo')),
+              DataColumn(label: Text('Cod. Artigo')),
               DataColumn(label: Text('Nome Artigo')),
               DataColumn(label: Text('Status')),
               DataColumn(label: Text('Ações')),
