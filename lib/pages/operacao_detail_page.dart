@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'operacao_list_page.dart';
+import '../models/operacao.dart';
 
 /// Lista de Tipos de Movimento disponíveis
 final List<Map<String, String>> tiposMovimento = [
@@ -38,8 +38,8 @@ class _OperacaoDetailPageState extends State<OperacaoDetailPage> {
     final op = widget.operacao;
 
     _codOperacaoController = TextEditingController(text: op?.codOperacao.toString() ?? '');
-    _descricaoController = TextEditingController(text: op?.descricao ?? '');
-    _tipoMovimentoSelecionado = op?.tipoMovimento;
+    _descricaoController = TextEditingController(text: op?.descOperacao ?? '');
+    _tipoMovimentoSelecionado = op?.codTipoMv;
     _status = op?.status ?? 'Ativo';
   }
 
@@ -55,8 +55,8 @@ class _OperacaoDetailPageState extends State<OperacaoDetailPage> {
 
     final novo = Operacao(
       codOperacao: int.tryParse(_codOperacaoController.text) ?? 0,
-      descricao: _descricaoController.text.trim().toUpperCase(),
-      tipoMovimento: _tipoMovimentoSelecionado ?? '',
+      descOperacao: _descricaoController.text.trim().toUpperCase(),
+      codTipoMv: _tipoMovimentoSelecionado ?? '',
       status: _status,
     );
 

@@ -1,62 +1,12 @@
 import 'package:flutter/material.dart';
-import 'artigo_list_page.dart';
-import 'artigo_roteiro_list_page.dart';
-import 'roteiro_list_page.dart';
+import '../models/artigo.dart';
+import '../models/artigo_roteiro_header.dart';
+import '../models/seq_roteiro.dart';
+import '../models/roteiro_configuracao.dart';
+import '../repositories/artigo_repository.dart';
+import '../repositories/seq_roteiro_repository.dart';
+import '../repositories/roteiro_repository.dart';
 import 'roteiro_detail_page.dart';
-
-/// Modelo de sequência de roteiro
-class SeqRoteiro {
-  final String codProduto;
-  final int codRef;
-  final int codOperacao;
-  final String descOperacao;
-  final String codPosto;
-  final int opcaoPcp;
-  final int seq;
-
-  SeqRoteiro({
-    required this.codProduto,
-    required this.codRef,
-    required this.codOperacao,
-    required this.descOperacao,
-    required this.codPosto,
-    required this.opcaoPcp,
-    required this.seq,
-  });
-}
-
-/// Armazena as operações salvas por artigo (codProduto -> lista de operações)
-final Map<String, List<SeqRoteiro>> operacoesPorArtigo = {
-  'PRP001': [
-    SeqRoteiro(
-      codProduto: 'PRP001',
-      codRef: 0,
-      codOperacao: 1000,
-      descOperacao: 'REMOLHO',
-      codPosto: 'RML',
-      opcaoPcp: 0,
-      seq: 1,
-    ),
-    SeqRoteiro(
-      codProduto: 'PRP001',
-      codRef: 0,
-      codOperacao: 1001,
-      descOperacao: 'ENXUGADEIRA',
-      codPosto: 'ENX',
-      opcaoPcp: 0,
-      seq: 2,
-    ),
-    SeqRoteiro(
-      codProduto: 'PRP001',
-      codRef: 0,
-      codOperacao: 1002,
-      descOperacao: 'DIVISORA',
-      codPosto: 'DIV',
-      opcaoPcp: 0,
-      seq: 3,
-    ),
-  ],
-};
 
 /// Página de cadastro/edição de Artigo x Roteiro
 class ArtigoRoteiroDetailPage extends StatefulWidget {
@@ -81,12 +31,12 @@ class _ArtigoRoteiroDetailPageState extends State<ArtigoRoteiroDetailPage> {
 
     if (header != null) {
       try {
-        _artigoSelecionado = artigosCadastrados.firstWhere(
+        _artigoSelecionado = artigoRepository.getAll().firstWhere(
           (a) => a.codProdutoRP == header.codProdutoRP,
         );
       } catch (_) {
-        if (artigosCadastrados.isNotEmpty) {
-          _artigoSelecionado = artigosCadastrados.first;
+        if (artigoRepository.getAll().isNotEmpty) {
+          _artigoSelecionado = artigoRepository.getAll().first;
         }
       }
 
@@ -95,7 +45,7 @@ class _ArtigoRoteiroDetailPageState extends State<ArtigoRoteiroDetailPage> {
   }
 
   void _carregarOperacoesDoRoteiro(String codProduto) {
-    final operacoesSalvas = operacoesPorArtigo[codProduto] ?? [];
+    final operacoesSalvas = seqRoteiroRepository.getPorArtigo(codProduto);
     _operacoes.addAll(operacoesSalvas);
   }
 
@@ -109,14 +59,14 @@ class _ArtigoRoteiroDetailPageState extends State<ArtigoRoteiroDetailPage> {
       return;
     }
 
-    operacoesPorArtigo[_artigoSelecionado!.codProdutoRP] = List.from(_operacoes);
+    seqRoteiroRepository.salvarPorArtigo(_artigoSelecionado!.codProdutoRP, List.from(_operacoes));
 
     final novo = ArtigoRoteiroHeader(
       codClassif: _artigoSelecionado!.codClassif,
       codProdutoRP: _artigoSelecionado!.codProdutoRP,
       codRefRP: 0,
       nomeArtigo: _artigoSelecionado!.nomeArtigo,
-      nomeRoteiro: _artigoSelecionado!.nomeRoteiro,
+      descArtigo: _artigoSelecionado!.descArtigo,
       opcaoPcp: _artigoSelecionado!.opcaoPcp,
       status: _artigoSelecionado!.status,
     );
@@ -176,16 +126,21 @@ class _ArtigoRoteiroDetailPageState extends State<ArtigoRoteiroDetailPage> {
   }
 
   void _abrirDetalhesRoteiro(SeqRoteiro seq) {
-    final roteiro = roteirosConfigurados.firstWhere(
-      (r) => r.codOperacao == seq.codOperacao,
-      orElse: () => roteirosConfigurados.first,
-    );
+    final roteiros = roteiroRepository.getAll();
+    if (roteiros.isEmpty) return;
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => RoteiroDetailPage(roteiroExistente: roteiro),
-      ),
-    );
+    try {
+      final roteiro = roteiros.firstWhere(
+        (r) => r.codOperacao == seq.codOperacao,
+      );
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => RoteiroDetailPage(roteiroExistente: roteiro),
+        ),
+      );
+    } catch (_) {
+      // Roteiro não encontrado
+    }
   }
 
   @override
@@ -221,7 +176,7 @@ class _ArtigoRoteiroDetailPageState extends State<ArtigoRoteiroDetailPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _sectionTitle('Operações do Roteiro (SEQ. ROTEIRO)'),
+                  _sectionTitle('Operações do Roteiro'),
                   ElevatedButton.icon(
                     onPressed: _adicionarOperacao,
                     icon: const Icon(Icons.add, size: 18),
@@ -267,7 +222,7 @@ class _ArtigoRoteiroDetailPageState extends State<ArtigoRoteiroDetailPage> {
   }
 
   Widget _buildArtigoDropdown() {
-    if (artigosCadastrados.isEmpty) {
+    if (artigoRepository.getAll().isEmpty) {
       return Card(
         color: Colors.amber.shade50,
         child: const Padding(
@@ -291,7 +246,7 @@ class _ArtigoRoteiroDetailPageState extends State<ArtigoRoteiroDetailPage> {
         labelText: 'Artigo',
         hintText: 'Selecione um artigo...',
       ),
-      items: artigosCadastrados
+      items: artigoRepository.getAll()
           .where((a) => a.status == 'Ativo')
           .map(
             (a) => DropdownMenuItem<Artigo>(
@@ -305,8 +260,6 @@ class _ArtigoRoteiroDetailPageState extends State<ArtigoRoteiroDetailPage> {
         setState(() {
           _artigoSelecionado = v;
           _operacoes.clear();
-          final operacoesSalvas = operacoesPorArtigo[v.codProdutoRP] ?? [];
-          _operacoes.addAll(operacoesSalvas);
         });
       },
       validator: (v) => v == null ? 'Selecione um artigo.' : null,
@@ -319,24 +272,96 @@ class _ArtigoRoteiroDetailPageState extends State<ArtigoRoteiroDetailPage> {
       color: Colors.blue.shade50,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.info, color: Colors.blue),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Artigo: ${artigo.nomeArtigo}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                const Icon(Icons.info, color: Colors.blue),
+                const SizedBox(width: 12),
+                Text(
+                  'Dados do Artigo Selecionado',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
-                  Text('Código: ${artigo.codProdutoRP} | Classificação: ${artigo.codClassif}'),
-                ],
-              ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInfoColumn('Código', artigo.codProdutoRP),
+                ),
+                Expanded(
+                  child: _buildInfoColumn('Cod. Ref.', artigo.opcaoPcp.toString()),
+                ),
+                Expanded(
+                  child: _buildInfoColumn('Cod. Artigo', artigo.codClassif.toString()),
+                ),
+                Expanded(
+                  child: _buildInfoColumn('Status', artigo.status),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInfoColumn('Desc. Produto', artigo.nomeArtigo),
+                ),
+                Expanded(
+                  child: _buildInfoColumn('Desc. Artigo', artigo.descArtigo),
+                ),
+              ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoColumn(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade700,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 180,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          Expanded(
+            child: Text(value),
+          ),
+        ],
       ),
     );
   }
@@ -415,7 +440,7 @@ class _DialogSelecionarRoteiro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final roteirosDisponiveis = roteirosConfigurados
+    final roteirosDisponiveis = roteiroRepository.getAll()
         .where((r) => !roteirosJaAdicionados.contains(r.codOperacao))
         .where((r) => r.status == 'Ativo')
         .toList();

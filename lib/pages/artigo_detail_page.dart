@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'artigo_list_page.dart';
+import '../models/artigo.dart';
+import '../constants/app_constants.dart';
+import '../database/database.dart';
+import '../widgets/section_title.dart';
 
-/// Página de cadastro/edição de Artigo
 class ArtigoDetailPage extends StatefulWidget {
   final Artigo? artigo;
 
@@ -16,43 +18,38 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
 
   late TextEditingController _codProdutoRPController;
   late TextEditingController _nomeArtigoController;
-  late TextEditingController _nomeRoteiroController;
+  late TextEditingController _descArtigoController;
   late TextEditingController _opcaoPcpController;
   late TextEditingController _codClassifController;
-  String _status = 'Ativo';
-
-  // Lista de produtos disponíveis para seleção no campo Código
-  final List<Map<String, String>> _produtosDisponiveis = const [
-    {'codigo': 'PRP001', 'descricao': 'BLACK'},
-    {'codigo': 'PRP002', 'descricao': 'WHITE PEROLA'},
-    {'codigo': 'PRP003', 'descricao': 'BLACK BMW'},
-  ];
+  late String _status;
 
   @override
   void initState() {
     super.initState();
+    _initControllers();
+  }
+
+  void _initControllers() {
     final artigo = widget.artigo;
 
     _codProdutoRPController =
         TextEditingController(text: artigo?.codProdutoRP ?? '');
     _nomeArtigoController =
         TextEditingController(text: artigo?.nomeArtigo ?? '');
-    _nomeRoteiroController =
-        TextEditingController(text: artigo?.nomeRoteiro ?? '');
-    _opcaoPcpController = TextEditingController(
-      text: artigo != null ? artigo.opcaoPcp.toString() : '0',
-    );
-    _codClassifController = TextEditingController(
-      text: artigo != null ? artigo.codClassif.toString() : '',
-    );
-    _status = artigo?.status ?? 'Ativo';
+    _descArtigoController =
+        TextEditingController(text: artigo?.descArtigo ?? '');
+    _opcaoPcpController =
+        TextEditingController(text: artigo?.opcaoPcp.toString() ?? '0');
+    _codClassifController =
+        TextEditingController(text: artigo?.codClassif.toString() ?? '');
+    _status = artigo?.status ?? AppConstants.statusAtivo;
   }
 
   @override
   void dispose() {
     _codProdutoRPController.dispose();
     _nomeArtigoController.dispose();
-    _nomeRoteiroController.dispose();
+    _descArtigoController.dispose();
     _opcaoPcpController.dispose();
     _codClassifController.dispose();
     super.dispose();
@@ -64,7 +61,7 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
     final novo = Artigo(
       codProdutoRP: _codProdutoRPController.text.trim().toUpperCase(),
       nomeArtigo: _nomeArtigoController.text.trim().toUpperCase(),
-      nomeRoteiro: _nomeRoteiroController.text.trim(),
+      descArtigo: _descArtigoController.text.trim().toUpperCase(),
       opcaoPcp: int.tryParse(_opcaoPcpController.text) ?? 0,
       codClassif: int.tryParse(_codClassifController.text) ?? 0,
       status: _status,
@@ -76,27 +73,26 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
   Future<void> _selecionarProdutoCodigo() async {
     final selecionado = await showDialog<Map<String, String>>(
       context: context,
-      builder: (ctx) {
-        return SimpleDialog(
-          title: const Text('Selecionar produto'),
-          children: _produtosDisponiveis.map((produto) {
-            final codigo = produto['codigo'] ?? '';
-            final descricao = produto['descricao'] ?? '';
-            final label = '$codigo - $descricao';
+      builder: (_) => SimpleDialog(
+        title: const Text('Selecionar produto'),
+        children: Database.produtosDisponiveis.map((produto) {
+          final codigo = produto['codigo'] ?? '';
+          final descricao = produto['descricao'] ?? '';
 
-            return SimpleDialogOption(
-              onPressed: () => Navigator.pop(ctx, produto),
-              child: Text(label),
-            );
-          }).toList(),
-        );
-      },
+          return SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, produto),
+            child: Text('$codigo - $descricao'),
+          );
+        }).toList(),
+      ),
     );
 
     if (selecionado != null) {
       setState(() {
         _codProdutoRPController.text =
             (selecionado['codigo'] ?? '').toUpperCase();
+        _nomeArtigoController.text =
+            (selecionado['descricao'] ?? '').toUpperCase();
       });
     }
   }
@@ -123,115 +119,11 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionTitle('Dados do Artigo'),
+              const SectionTitle(text: 'Dados do Artigo'),
               const SizedBox(height: 16),
-
-              // Linha 1: Código Artigo e Cod Ref.
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _codClassifController,
-                      decoration: const InputDecoration(
-                        labelText: 'Código Artigo',
-                        hintText: 'Ex: 7',
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Informe o código.' : null,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _opcaoPcpController,
-                      decoration: const InputDecoration(
-                        labelText: 'Cod Ref.',
-                        hintText: 'Ex: 0',
-                      ),
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Linha 2: Código e Nome do Artigo
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _codProdutoRPController,
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Código',
-                        hintText: 'Ex: PRP001',
-                        suffixIcon: Icon(Icons.arrow_drop_down),
-                      ),
-                      textCapitalization: TextCapitalization.characters,
-                      onTap: _selecionarProdutoCodigo,
-                      validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Informe o código.' : null,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      controller: _nomeArtigoController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nome do Artigo',
-                        hintText: 'Ex: QUARTZO',
-                      ),
-                      textCapitalization: TextCapitalization.characters,
-                      validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Informe o nome.' : null,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Linha 3: Nome do Roteiro
-              TextFormField(
-                controller: _nomeRoteiroController,
-                decoration: const InputDecoration(
-                  labelText: 'Nome do Roteiro',
-                  hintText: 'Ex: Roteiro QUARTZO PRP001',
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Linha 4: Status
-              DropdownButtonFormField<String>(
-                value: _status,
-                decoration: const InputDecoration(
-                  labelText: 'Status',
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'Ativo', child: Text('Ativo')),
-                  DropdownMenuItem(value: 'Inativo', child: Text('Inativo')),
-                ],
-                onChanged: (v) => setState(() => _status = v!),
-              ),
+              _buildFieldsSection(),
               const SizedBox(height: 32),
-
-              // Botões de ação
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancelar'),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton.icon(
-                    onPressed: _salvar,
-                    icon: const Icon(Icons.save),
-                    label: const Text('Salvar'),
-                  ),
-                ],
-              ),
+              _buildActionButtons(),
             ],
           ),
         ),
@@ -239,14 +131,121 @@ class _ArtigoDetailPageState extends State<ArtigoDetailPage> {
     );
   }
 
-  Widget _sectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF212121),
+  Widget _buildFieldsSection() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildCodigoField()),
+            const SizedBox(width: 16),
+            Expanded(child: _buildCodRefField()),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildNomeArtigoField(),
+        const SizedBox(height: 16),
+        _buildCodClassifField(),
+        const SizedBox(height: 16),
+        _buildDescArtigoField(),
+        const SizedBox(height: 16),
+        _buildStatusField(),
+      ],
+    );
+  }
+
+  Widget _buildCodClassifField() {
+    return TextFormField(
+      controller: _codClassifController,
+      decoration: const InputDecoration(
+        labelText: 'Cod. Artigo',
+        hintText: 'Ex: 7',
       ),
+      keyboardType: TextInputType.number,
+      validator: (v) => (v == null || v.isEmpty) ? 'Informe o código.' : null,
+    );
+  }
+
+  Widget _buildCodRefField() {
+    return TextFormField(
+      controller: _opcaoPcpController,
+      decoration: const InputDecoration(
+        labelText: 'Cod Ref.',
+        hintText: 'Ex: 0',
+      ),
+      keyboardType: TextInputType.number,
+    );
+  }
+
+  Widget _buildCodigoField() {
+    return TextFormField(
+      controller: _codProdutoRPController,
+      readOnly: true,
+      decoration: const InputDecoration(
+        labelText: 'Produto Código',
+        hintText: 'Ex: PRP001',
+        suffixIcon: Icon(Icons.arrow_drop_down),
+      ),
+      textCapitalization: TextCapitalization.characters,
+      onTap: _selecionarProdutoCodigo,
+      validator: (v) => (v == null || v.isEmpty) ? 'Informe o código.' : null,
+    );
+  }
+
+  Widget _buildNomeArtigoField() {
+    return TextFormField(
+      controller: _nomeArtigoController,
+      decoration: const InputDecoration(
+        labelText: 'Desc. Produto',
+        hintText: 'Ex: COURO SEMI ACABADO',
+      ),
+      textCapitalization: TextCapitalization.characters,
+      validator: (v) => (v == null || v.isEmpty) ? 'Informe o nome.' : null,
+    );
+  }
+
+  Widget _buildDescArtigoField() {
+    return TextFormField(
+      controller: _descArtigoController,
+      decoration: const InputDecoration(
+        labelText: 'Desc. Artigo',
+        hintText: 'Ex: QUARTZO',
+      ),
+      textCapitalization: TextCapitalization.characters,
+      validator: (v) => (v == null || v.isEmpty) ? 'Informe a descrição.' : null,
+    );
+  }
+
+  Widget _buildStatusField() {
+    return DropdownButtonFormField<String>(
+      value: _status,
+      decoration: const InputDecoration(labelText: 'Status'),
+      items: AppConstants.statusOptions
+          .map((status) => DropdownMenuItem(
+                value: status,
+                child: Text(status),
+              ))
+          .toList(),
+      onChanged: (v) {
+        if (v != null) setState(() => _status = v);
+      },
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        OutlinedButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        const SizedBox(width: 16),
+        ElevatedButton.icon(
+          onPressed: _salvar,
+          icon: const Icon(Icons.save),
+          label: const Text('Salvar'),
+        ),
+      ],
     );
   }
 }

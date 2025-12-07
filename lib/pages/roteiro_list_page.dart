@@ -1,75 +1,9 @@
 import 'package:flutter/material.dart';
-import 'operacao_list_page.dart';
+import '../models/roteiro_configuracao.dart';
+import '../models/variavel_controle.dart';
+import '../models/produto_quimico.dart';
+import '../repositories/roteiro_repository.dart';
 import 'roteiro_detail_page.dart';
-
-/// Modelo de Variável de Controle
-class VariavelControle {
-  String seq;
-  String descricao;
-  String previstoTolerancia;
-  String padrao;
-  String unidade;
-
-  VariavelControle({
-    required this.seq,
-    required this.descricao,
-    required this.previstoTolerancia,
-    required this.padrao,
-    required this.unidade,
-  });
-}
-
-/// Modelo de Produto Químico
-class ProdutoQuimico {
-  String seq;
-  String codProdutoComp;
-  String codRef;
-  String descricao;
-  String padrao;
-  String previstoTolerancia;
-  String unidade;
-
-  ProdutoQuimico({
-    required this.seq,
-    required this.codProdutoComp,
-    required this.codRef,
-    required this.descricao,
-    required this.padrao,
-    required this.previstoTolerancia,
-    required this.unidade,
-  });
-}
-
-/// Modelo de Configuração de Roteiro
-class RoteiroConfiguracao {
-  final int codOperacao;
-  final String descOperacao;
-  final String codTipoMv;
-  final String codPosto;
-  final String tempoSetup;
-  final String tempoEspera;
-  final String tempoRepouso;
-  final String tempoInicio;
-  final String observacao;
-  final String status;
-  final List<VariavelControle> variaveis;
-  final List<ProdutoQuimico> quimicos;
-
-  const RoteiroConfiguracao({
-    required this.codOperacao,
-    required this.descOperacao,
-    required this.codTipoMv,
-    required this.codPosto,
-    required this.tempoSetup,
-    required this.tempoEspera,
-    required this.tempoRepouso,
-    required this.tempoInicio,
-    this.observacao = '',
-    required this.status,
-    this.variaveis = const [],
-    this.quimicos = const [],
-  });
-}
 
 /// Dados mock de variáveis por operação
 final Map<int, List<VariavelControle>> variaveisPorOperacaoMock = {
@@ -156,50 +90,6 @@ final Map<int, List<ProdutoQuimico>> quimicosPorOperacaoMock = {
   ],
 };
 
-
-/// Lista global de roteiros configurados
-final List<RoteiroConfiguracao> roteirosConfigurados = [
-  RoteiroConfiguracao(
-    codOperacao: 1000,
-    descOperacao: 'REMOLHO',
-    codTipoMv: 'C901',
-    codPosto: 'RML',
-    tempoSetup: '00:00',
-    tempoEspera: '00:00',
-    tempoRepouso: '00:00',
-    tempoInicio: '00:00',
-    status: 'Ativo',
-    variaveis: variaveisPorOperacaoMock[1000] ?? [],
-    quimicos: quimicosPorOperacaoMock[1000] ?? [],
-  ),
-  RoteiroConfiguracao(
-    codOperacao: 1001,
-    descOperacao: 'ENXUGADEIRA',
-    codTipoMv: 'C902',
-    codPosto: 'ENX',
-    tempoSetup: '00:00',
-    tempoEspera: '00:00',
-    tempoRepouso: '00:00',
-    tempoInicio: '00:00',
-    status: 'Ativo',
-    variaveis: variaveisPorOperacaoMock[1001] ?? [],
-    quimicos: [],
-  ),
-  RoteiroConfiguracao(
-    codOperacao: 1002,
-    descOperacao: 'DIVISORA',
-    codTipoMv: 'C903',
-    codPosto: 'DIV',
-    tempoSetup: '00:00',
-    tempoEspera: '00:00',
-    tempoRepouso: '00:00',
-    tempoInicio: '00:00',
-    status: 'Ativo',
-    variaveis: variaveisPorOperacaoMock[1002] ?? [],
-    quimicos: [],
-  ),
-];
-
 /// Página de listagem de Roteiros
 class RoteiroListPage extends StatefulWidget {
   const RoteiroListPage({super.key});
@@ -209,6 +99,8 @@ class RoteiroListPage extends StatefulWidget {
 }
 
 class _RoteiroListPageState extends State<RoteiroListPage> {
+  final _repository = roteiroRepository;
+
   void _abrirCadastro({RoteiroConfiguracao? roteiro}) async {
     final result = await Navigator.of(context).push<RoteiroConfiguracao>(
       MaterialPageRoute(
@@ -220,17 +112,9 @@ class _RoteiroListPageState extends State<RoteiroListPage> {
 
     setState(() {
       if (roteiro == null) {
-        final existente = roteirosConfigurados.indexWhere(
-          (r) => r.codOperacao == result.codOperacao,
-        );
-        if (existente >= 0) {
-          roteirosConfigurados[existente] = result;
-        } else {
-          roteirosConfigurados.add(result);
-        }
+        _repository.add(result);
       } else {
-        final idx = roteirosConfigurados.indexOf(roteiro);
-        roteirosConfigurados[idx] = result;
+        _repository.update(roteiro, result);
       }
     });
   }
@@ -250,7 +134,7 @@ class _RoteiroListPageState extends State<RoteiroListPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() => roteirosConfigurados.remove(roteiro));
+              setState(() => _repository.remove(roteiro));
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                     content: Text('Configuração de roteiro removida.')),
@@ -266,6 +150,7 @@ class _RoteiroListPageState extends State<RoteiroListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final roteiros = _repository.getAll();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cadastro de Roteiro Produtivo'),
@@ -279,9 +164,9 @@ class _RoteiroListPageState extends State<RoteiroListPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: roteirosConfigurados.isEmpty
+        child: roteiros.isEmpty
             ? _buildEmptyState()
-            : _buildDataTable(),
+            : _buildDataTable(roteiros),
       ),
     );
   }
@@ -313,7 +198,7 @@ class _RoteiroListPageState extends State<RoteiroListPage> {
     );
   }
 
-  Widget _buildDataTable() {
+  Widget _buildDataTable(List<RoteiroConfiguracao> roteiros) {
     return Card(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -326,7 +211,7 @@ class _RoteiroListPageState extends State<RoteiroListPage> {
             DataColumn(label: Text('Status')),
             DataColumn(label: Text('Ações')),
           ],
-          rows: roteirosConfigurados.map((roteiro) {
+          rows: roteiros.map((roteiro) {
             return DataRow(
               cells: [
                 DataCell(Text(roteiro.codOperacao.toString())),

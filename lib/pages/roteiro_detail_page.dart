@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'operacao_list_page.dart';
-import 'roteiro_list_page.dart';
+import '../models/roteiro_configuracao.dart';
+import '../models/operacao.dart' as models;
+import '../models/variavel_controle.dart';
+import '../models/produto_quimico.dart';
+import '../repositories/operacao_repository.dart';
+import '../repositories/variavel_controle_repository.dart';
+import '../repositories/produto_quimico_repository.dart';
 
 /// Página de cadastro/edição de Roteiro Produtivo
 class RoteiroDetailPage extends StatefulWidget {
@@ -15,7 +20,7 @@ class RoteiroDetailPage extends StatefulWidget {
 class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
   final _formKey = GlobalKey<FormState>();
 
-  Operacao? _operacaoSelecionada;
+  models.Operacao? _operacaoSelecionada;
 
   late TextEditingController _tempoSetupController;
   late TextEditingController _tempoEsperaController;
@@ -37,7 +42,7 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
 
     if (roteiro != null) {
       try {
-        _operacaoSelecionada = operacoesCadastradas.firstWhere(
+        _operacaoSelecionada = operacaoRepository.getAll().firstWhere(
           (o) => o.codOperacao == roteiro.codOperacao,
         );
       } catch (_) {}
@@ -56,15 +61,15 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
     _tempoInicioController =
         TextEditingController(text: roteiro?.tempoInicio ?? '00:00');
     _observacaoController =
-        TextEditingController(text: roteiro?.observacao ?? '');
+        TextEditingController(text: '');
   }
 
   void _carregarVariaveisEQuimicos(int codOperacao) {
-    _variaveis = [...?variaveisPorOperacaoMock[codOperacao]];
-    _quimicos = [...?quimicosPorOperacaoMock[codOperacao]];
+    _variaveis = variavelControleRepository.getPorOperacao(codOperacao);
+    _quimicos = produtoQuimicoRepository.getPorOperacao(codOperacao);
   }
 
-  void _onOperacaoChanged(Operacao? operacao) {
+  void _onOperacaoChanged(models.Operacao? operacao) {
     if (operacao == null) return;
 
     setState(() {
@@ -110,17 +115,14 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
 
     final novo = RoteiroConfiguracao(
       codOperacao: _operacaoSelecionada!.codOperacao,
-      descOperacao: _operacaoSelecionada!.descricao,
-      codTipoMv: _operacaoSelecionada!.tipoMovimento,
+      descOperacao: _operacaoSelecionada!.descOperacao,
+      codTipoMv: _operacaoSelecionada!.codTipoMv,
       codPosto: _postoTrabalho ?? 'ENX',
       tempoSetup: _tempoSetupController.text,
       tempoEspera: _tempoEsperaController.text,
       tempoRepouso: _tempoRepousoController.text,
       tempoInicio: _tempoInicioController.text,
-      observacao: _observacaoController.text.trim(),
       status: _status,
-      variaveis: _variaveis,
-      quimicos: _quimicos,
     );
 
     Navigator.of(context).pop(novo);
@@ -257,7 +259,8 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
   }
 
   Widget _buildOperacaoDropdown(bool isEdicao) {
-    if (operacoesCadastradas.isEmpty) {
+    final operacoes = operacaoRepository.getAll();
+    if (operacoes.isEmpty) {
       return Card(
         color: Colors.amber.shade50,
         child: const Padding(
@@ -276,18 +279,18 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
       );
     }
 
-    return DropdownButtonFormField<Operacao>(
+    return DropdownButtonFormField<models.Operacao>(
       value: _operacaoSelecionada,
       decoration: const InputDecoration(
         labelText: 'Operação',
         hintText: 'Selecione uma operação...',
       ),
-      items: operacoesCadastradas
+      items: operacaoRepository.getAll()
           .where((o) => o.status == 'Ativo')
           .map(
-            (o) => DropdownMenuItem<Operacao>(
+            (o) => DropdownMenuItem<models.Operacao>(
               value: o,
-              child: Text('${o.codOperacao} - ${o.descricao}'),
+              child: Text('${o.codOperacao} - ${o.descOperacao}'),
             ),
           )
           .toList(),
@@ -341,8 +344,11 @@ class _RoteiroDetailPageState extends State<RoteiroDetailPage> {
               DropdownMenuItem(value: 'ENX', child: Text('ENX - Enxugadeira')),
               DropdownMenuItem(value: 'RML', child: Text('RML - Remolho')),
               DropdownMenuItem(value: 'DIV', child: Text('DIV - Divisora')),
+              DropdownMenuItem(value: 'RBX', child: Text('RBX - Rebaixadeira')),
+              DropdownMenuItem(value: 'RFL', child: Text('RFL - Refila')),
               DropdownMenuItem(value: 'CUR', child: Text('CUR - Curtimento')),
               DropdownMenuItem(value: 'REC', child: Text('REC - Recurtimento')),
+              DropdownMenuItem(value: 'SEC', child: Text('SEC - SECAGEM')),
               DropdownMenuItem(value: 'TIN', child: Text('TIN - Tingimento')),
               DropdownMenuItem(value: 'RCL', child: Text('RCL - Reclassificação')),
               DropdownMenuItem(value: 'CAL', child: Text('CAL - Calha')),

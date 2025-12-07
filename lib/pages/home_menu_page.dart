@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'artigo_list_page.dart';
-import 'operacao_list_page.dart';
-import 'roteiro_list_page.dart';
-import 'artigo_roteiro_list_page.dart';
+import '../models/artigo.dart';
+import '../models/operacao.dart';
+import '../models/artigo_roteiro_header.dart';
+import '../models/roteiro_configuracao.dart';
+import '../repositories/artigo_repository.dart';
+import '../repositories/operacao_repository.dart';
+import '../repositories/artigo_roteiro_repository.dart';
+import '../repositories/roteiro_repository.dart';
 import 'artigo_detail_page.dart';
 import 'operacao_detail_page.dart';
 import 'roteiro_detail_page.dart';
@@ -20,10 +24,10 @@ class HomeMenuPage extends StatefulWidget {
 class _HomeMenuPageState extends State<HomeMenuPage> {
   // Controle do menu expandido
   bool _roteiroExpanded = true;
-  
+
   // Página atual selecionada
   int _selectedIndex = 0;
-  
+
   // Títulos para o breadcrumb
   final List<String> _titulos = [
     'Cadastro de Artigo',
@@ -40,14 +44,14 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
         children: [
           // === CABEÇALHO ===
           _buildHeader(),
-          
+
           // === CORPO (SIDEBAR + CONTEÚDO) ===
           Expanded(
             child: Row(
               children: [
                 // Menu Lateral
                 _buildSidebar(),
-                
+
                 // Área de Conteúdo
                 Expanded(
                   child: _buildContentArea(),
@@ -109,7 +113,7 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
               ],
             ),
           ),
-          
+
           // Botão Menu (hambúrguer)
           Container(
             margin: const EdgeInsets.only(left: 8),
@@ -123,9 +127,9 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
               tooltip: 'Menu',
             ),
           ),
-          
+
           const Spacer(),
-          
+
           // Empresa atual
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -158,7 +162,8 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                 CircleAvatar(
                   radius: 18,
                   backgroundColor: Colors.grey.shade300,
-                  child: Icon(Icons.person, color: Colors.grey.shade600, size: 22),
+                  child:
+                      Icon(Icons.person, color: Colors.grey.shade600, size: 22),
                 ),
               ],
             ),
@@ -182,7 +187,7 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
         padding: EdgeInsets.zero,
         children: [
           const SizedBox(height: 8),
-          
+
           // Item principal: Roteiro Produtivo (expansível)
           _buildMenuItemExpansible(
             icon: Icons.settings,
@@ -194,7 +199,7 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
               });
             },
           ),
-          
+
           // Submenus (visíveis quando expandido)
           if (_roteiroExpanded) ...[
             _buildSubMenuItem(
@@ -261,7 +266,7 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
     required int index,
   }) {
     final isSelected = _selectedIndex == index;
-    
+
     return InkWell(
       onTap: () {
         setState(() {
@@ -285,7 +290,9 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
               width: 6,
               height: 6,
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF1976D2) : const Color(0xFF9E9E9E),
+                color: isSelected
+                    ? const Color(0xFF1976D2)
+                    : const Color(0xFF9E9E9E),
                 shape: BoxShape.circle,
               ),
             ),
@@ -295,7 +302,9 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
                 title,
                 style: TextStyle(
                   fontSize: 13,
-                  color: isSelected ? const Color(0xFF1976D2) : const Color(0xFF616161),
+                  color: isSelected
+                      ? const Color(0xFF1976D2)
+                      : const Color(0xFF616161),
                   fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
                 ),
               ),
@@ -364,10 +373,29 @@ class _HomeMenuPageState extends State<HomeMenuPage> {
 
   String _formatDataAtual() {
     final now = DateTime.now();
-    final dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    final dias = [
+      'Domingo',
+      'Segunda',
+      'Terça',
+      'Quarta',
+      'Quinta',
+      'Sexta',
+      'Sábado'
+    ];
     final meses = [
-      '', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      '',
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro'
     ];
     return '${dias[now.weekday % 7]}, ${now.day} de ${meses[now.month]} de ${now.year}';
   }
@@ -416,6 +444,8 @@ class ArtigoListPageContent extends StatefulWidget {
 }
 
 class _ArtigoListPageContentState extends State<ArtigoListPageContent> {
+  final _repository = artigoRepository;
+
   void _abrirDetalhe({Artigo? artigo}) async {
     final result = await Navigator.of(context).push<Artigo>(
       MaterialPageRoute(builder: (_) => ArtigoDetailPage(artigo: artigo)),
@@ -423,10 +453,9 @@ class _ArtigoListPageContentState extends State<ArtigoListPageContent> {
     if (result == null) return;
     setState(() {
       if (artigo == null) {
-        artigosCadastrados.add(result);
+        _repository.add(result);
       } else {
-        final idx = artigosCadastrados.indexOf(artigo);
-        artigosCadastrados[idx] = result;
+        _repository.update(artigo, result);
       }
     });
   }
@@ -438,11 +467,13 @@ class _ArtigoListPageContentState extends State<ArtigoListPageContent> {
         title: const Text('Confirmar exclusão'),
         content: Text('Deseja remover o artigo "${artigo.nomeArtigo}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() => artigosCadastrados.remove(artigo));
+              setState(() => _repository.remove(artigo));
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Remover'),
@@ -454,13 +485,16 @@ class _ArtigoListPageContentState extends State<ArtigoListPageContent> {
 
   @override
   Widget build(BuildContext context) {
+    final artigos = _repository.getAll();
     return Column(
       children: [
-        _buildHeader('Cadastro de Artigo', Icons.category, () => _abrirDetalhe()),
+        _buildHeader(
+            'Cadastro de Artigo', Icons.category, () => _abrirDetalhe()),
         Expanded(
-          child: artigosCadastrados.isEmpty
-              ? _emptyState(Icons.category_outlined, 'Nenhum artigo cadastrado.')
-              : _buildTable(),
+          child: artigos.isEmpty
+              ? _emptyState(
+                  Icons.category_outlined, 'Nenhum artigo cadastrado.')
+              : _buildTable(artigos),
         ),
       ],
     );
@@ -469,14 +503,20 @@ class _ArtigoListPageContentState extends State<ArtigoListPageContent> {
   Widget _buildHeader(String title, IconData icon, VoidCallback onAdd) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey.shade200))),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.grey.shade200))),
       child: Row(
         children: [
           Icon(icon, color: Colors.grey.shade600),
           const SizedBox(width: 12),
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const Spacer(),
-          ElevatedButton.icon(onPressed: onAdd, icon: const Icon(Icons.add, size: 18), label: const Text('Novo')),
+          ElevatedButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Novo')),
         ],
       ),
     );
@@ -495,31 +535,40 @@ class _ArtigoListPageContentState extends State<ArtigoListPageContent> {
     );
   }
 
-  Widget _buildTable() {
+  Widget _buildTable(List<Artigo> artigos) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
           columns: const [
-            DataColumn(label: Text('Cod. Classif')),
+            DataColumn(label: Text('Cod. Produto')),
             DataColumn(label: Text('Cod Ref.')),
+            DataColumn(label: Text('Desc. Produto')),
             DataColumn(label: Text('Artigo')),
-            DataColumn(label: Text('Código')),
+            DataColumn(label: Text('Desc. Artigo')),
             DataColumn(label: Text('Status')),
             DataColumn(label: Text('Ações')),
           ],
-          rows: artigosCadastrados.map((a) => DataRow(cells: [
-            DataCell(Text(a.codClassif.toString())),
-            DataCell(Text(a.opcaoPcp.toString())),
-            DataCell(Text(a.nomeArtigo)),
-            DataCell(Text(a.codProdutoRP)),
-            DataCell(_statusBadge(a.status)),
-            DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
-              IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () => _abrirDetalhe(artigo: a)),
-              IconButton(icon: const Icon(Icons.delete, size: 20, color: Colors.red), onPressed: () => _remover(a)),
-            ])),
-          ])).toList(),
+          rows: artigos
+              .map((a) => DataRow(cells: [
+                    DataCell(Text(a.codProdutoRP)),
+                    DataCell(Text(a.opcaoPcp.toString())),
+                    DataCell(Text(a.nomeArtigo)),
+                    DataCell(Text(a.codClassif.toString())),
+                    DataCell(Text(a.descArtigo)),
+                    DataCell(_statusBadge(a.status)),
+                    DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
+                      IconButton(
+                          icon: const Icon(Icons.edit, size: 20),
+                          onPressed: () => _abrirDetalhe(artigo: a)),
+                      IconButton(
+                          icon: const Icon(Icons.delete,
+                              size: 20, color: Colors.red),
+                          onPressed: () => _remover(a)),
+                    ])),
+                  ]))
+              .toList(),
         ),
       ),
     );
@@ -533,7 +582,11 @@ class _ArtigoListPageContentState extends State<ArtigoListPageContent> {
         color: ok ? Colors.green.shade50 : Colors.red.shade50,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(status, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: ok ? Colors.green.shade700 : Colors.red.shade700)),
+      child: Text(status,
+          style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: ok ? Colors.green.shade700 : Colors.red.shade700)),
     );
   }
 }
@@ -543,10 +596,13 @@ class OperacaoListPageContent extends StatefulWidget {
   const OperacaoListPageContent({super.key});
 
   @override
-  State<OperacaoListPageContent> createState() => _OperacaoListPageContentState();
+  State<OperacaoListPageContent> createState() =>
+      _OperacaoListPageContentState();
 }
 
 class _OperacaoListPageContentState extends State<OperacaoListPageContent> {
+  final _repository = operacaoRepository;
+
   void _abrirDetalhe({Operacao? operacao}) async {
     final result = await Navigator.of(context).push<Operacao>(
       MaterialPageRoute(builder: (_) => OperacaoDetailPage(operacao: operacao)),
@@ -554,10 +610,9 @@ class _OperacaoListPageContentState extends State<OperacaoListPageContent> {
     if (result == null) return;
     setState(() {
       if (operacao == null) {
-        operacoesCadastradas.add(result);
+        _repository.add(result);
       } else {
-        final idx = operacoesCadastradas.indexOf(operacao);
-        operacoesCadastradas[idx] = result;
+        _repository.update(operacao, result);
       }
     });
   }
@@ -567,13 +622,15 @@ class _OperacaoListPageContentState extends State<OperacaoListPageContent> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirmar exclusão'),
-        content: Text('Remover "${op.descricao}"?'),
+        content: Text('Remover "${op.descOperacao}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() => operacoesCadastradas.remove(op));
+              setState(() => _repository.remove(op));
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Remover'),
@@ -585,13 +642,16 @@ class _OperacaoListPageContentState extends State<OperacaoListPageContent> {
 
   @override
   Widget build(BuildContext context) {
+    final operacoes = _repository.getAll();
     return Column(
       children: [
-        _buildHeader('Cadastro de Operação', Icons.build, () => _abrirDetalhe()),
+        _buildHeader(
+            'Cadastro de Operação', Icons.build, () => _abrirDetalhe()),
         Expanded(
-          child: operacoesCadastradas.isEmpty
-              ? _emptyState(Icons.build_outlined, 'Nenhuma operação cadastrada.')
-              : _buildTable(),
+          child: operacoes.isEmpty
+              ? _emptyState(
+                  Icons.build_outlined, 'Nenhuma operação cadastrada.')
+              : _buildTable(operacoes),
         ),
       ],
     );
@@ -600,14 +660,20 @@ class _OperacaoListPageContentState extends State<OperacaoListPageContent> {
   Widget _buildHeader(String title, IconData icon, VoidCallback onAdd) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey.shade200))),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.grey.shade200))),
       child: Row(
         children: [
           Icon(icon, color: Colors.grey.shade600),
           const SizedBox(width: 12),
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const Spacer(),
-          ElevatedButton.icon(onPressed: onAdd, icon: const Icon(Icons.add, size: 18), label: const Text('Novo')),
+          ElevatedButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Novo')),
         ],
       ),
     );
@@ -626,7 +692,7 @@ class _OperacaoListPageContentState extends State<OperacaoListPageContent> {
     );
   }
 
-  Widget _buildTable() {
+  Widget _buildTable(List<Operacao> operacoes) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: SingleChildScrollView(
@@ -639,16 +705,23 @@ class _OperacaoListPageContentState extends State<OperacaoListPageContent> {
             DataColumn(label: Text('Status')),
             DataColumn(label: Text('Ações')),
           ],
-          rows: operacoesCadastradas.map((op) => DataRow(cells: [
-            DataCell(Text(op.codOperacao.toString())),
-            DataCell(Text(op.descricao)),
-            DataCell(Text(op.tipoMovimento)),
-            DataCell(_statusBadge(op.status)),
-            DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
-              IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () => _abrirDetalhe(operacao: op)),
-              IconButton(icon: const Icon(Icons.delete, size: 20, color: Colors.red), onPressed: () => _remover(op)),
-            ])),
-          ])).toList(),
+          rows: operacoes
+              .map((op) => DataRow(cells: [
+                    DataCell(Text(op.codOperacao.toString())),
+                    DataCell(Text(op.descOperacao)),
+                    DataCell(Text(op.codTipoMv)),
+                    DataCell(_statusBadge(op.status)),
+                    DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
+                      IconButton(
+                          icon: const Icon(Icons.edit, size: 20),
+                          onPressed: () => _abrirDetalhe(operacao: op)),
+                      IconButton(
+                          icon: const Icon(Icons.delete,
+                              size: 20, color: Colors.red),
+                          onPressed: () => _remover(op)),
+                    ])),
+                  ]))
+              .toList(),
         ),
       ),
     );
@@ -658,8 +731,14 @@ class _OperacaoListPageContentState extends State<OperacaoListPageContent> {
     final ok = status == 'Ativo';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: ok ? Colors.green.shade50 : Colors.red.shade50, borderRadius: BorderRadius.circular(12)),
-      child: Text(status, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: ok ? Colors.green.shade700 : Colors.red.shade700)),
+      decoration: BoxDecoration(
+          color: ok ? Colors.green.shade50 : Colors.red.shade50,
+          borderRadius: BorderRadius.circular(12)),
+      child: Text(status,
+          style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: ok ? Colors.green.shade700 : Colors.red.shade700)),
     );
   }
 }
@@ -673,22 +752,19 @@ class RoteiroListPageContent extends StatefulWidget {
 }
 
 class _RoteiroListPageContentState extends State<RoteiroListPageContent> {
+  final _repository = roteiroRepository;
+
   void _abrirCadastro({RoteiroConfiguracao? roteiro}) async {
     final result = await Navigator.of(context).push<RoteiroConfiguracao>(
-      MaterialPageRoute(builder: (_) => RoteiroDetailPage(roteiroExistente: roteiro)),
+      MaterialPageRoute(
+          builder: (_) => RoteiroDetailPage(roteiroExistente: roteiro)),
     );
     if (result == null) return;
     setState(() {
       if (roteiro == null) {
-        final idx = roteirosConfigurados.indexWhere((r) => r.codOperacao == result.codOperacao);
-        if (idx >= 0) {
-          roteirosConfigurados[idx] = result;
-        } else {
-          roteirosConfigurados.add(result);
-        }
+        _repository.add(result);
       } else {
-        final idx = roteirosConfigurados.indexOf(roteiro);
-        roteirosConfigurados[idx] = result;
+        _repository.update(roteiro, result);
       }
     });
   }
@@ -700,11 +776,13 @@ class _RoteiroListPageContentState extends State<RoteiroListPageContent> {
         title: const Text('Confirmar exclusão'),
         content: Text('Remover "${r.descOperacao}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() => roteirosConfigurados.remove(r));
+              setState(() => _repository.remove(r));
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Remover'),
@@ -716,13 +794,15 @@ class _RoteiroListPageContentState extends State<RoteiroListPageContent> {
 
   @override
   Widget build(BuildContext context) {
+    final roteiros = _repository.getAll();
     return Column(
       children: [
-        _buildHeader('Cadastro de Roteiro Produtivo', Icons.settings, () => _abrirCadastro()),
+        _buildHeader('Cadastro de Roteiro Produtivo', Icons.settings,
+            () => _abrirCadastro()),
         Expanded(
-          child: roteirosConfigurados.isEmpty
+          child: roteiros.isEmpty
               ? _emptyState(Icons.route_outlined, 'Nenhum roteiro configurado.')
-              : _buildTable(),
+              : _buildTable(roteiros),
         ),
       ],
     );
@@ -731,14 +811,20 @@ class _RoteiroListPageContentState extends State<RoteiroListPageContent> {
   Widget _buildHeader(String title, IconData icon, VoidCallback onAdd) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey.shade200))),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.grey.shade200))),
       child: Row(
         children: [
           Icon(icon, color: Colors.grey.shade600),
           const SizedBox(width: 12),
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const Spacer(),
-          ElevatedButton.icon(onPressed: onAdd, icon: const Icon(Icons.add, size: 18), label: const Text('Novo')),
+          ElevatedButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Novo')),
         ],
       ),
     );
@@ -757,7 +843,7 @@ class _RoteiroListPageContentState extends State<RoteiroListPageContent> {
     );
   }
 
-  Widget _buildTable() {
+  Widget _buildTable(List<RoteiroConfiguracao> roteiros) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: SingleChildScrollView(
@@ -771,17 +857,24 @@ class _RoteiroListPageContentState extends State<RoteiroListPageContent> {
             DataColumn(label: Text('Status')),
             DataColumn(label: Text('Ações')),
           ],
-          rows: roteirosConfigurados.map((r) => DataRow(cells: [
-            DataCell(Text(r.codOperacao.toString())),
-            DataCell(Text(r.descOperacao)),
-            DataCell(Text(r.codTipoMv)),
-            DataCell(Text(r.codPosto)),
-            DataCell(_statusBadge(r.status)),
-            DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
-              IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () => _abrirCadastro(roteiro: r)),
-              IconButton(icon: const Icon(Icons.delete, size: 20, color: Colors.red), onPressed: () => _remover(r)),
-            ])),
-          ])).toList(),
+          rows: roteiros
+              .map((r) => DataRow(cells: [
+                    DataCell(Text(r.codOperacao.toString())),
+                    DataCell(Text(r.descOperacao)),
+                    DataCell(Text(r.codTipoMv)),
+                    DataCell(Text(r.codPosto)),
+                    DataCell(_statusBadge(r.status)),
+                    DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
+                      IconButton(
+                          icon: const Icon(Icons.edit, size: 20),
+                          onPressed: () => _abrirCadastro(roteiro: r)),
+                      IconButton(
+                          icon: const Icon(Icons.delete,
+                              size: 20, color: Colors.red),
+                          onPressed: () => _remover(r)),
+                    ])),
+                  ]))
+              .toList(),
         ),
       ),
     );
@@ -791,8 +884,14 @@ class _RoteiroListPageContentState extends State<RoteiroListPageContent> {
     final ok = status == 'Ativo';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: ok ? Colors.green.shade50 : Colors.red.shade50, borderRadius: BorderRadius.circular(12)),
-      child: Text(status, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: ok ? Colors.green.shade700 : Colors.red.shade700)),
+      decoration: BoxDecoration(
+          color: ok ? Colors.green.shade50 : Colors.red.shade50,
+          borderRadius: BorderRadius.circular(12)),
+      child: Text(status,
+          style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: ok ? Colors.green.shade700 : Colors.red.shade700)),
     );
   }
 }
@@ -802,30 +901,28 @@ class ArtigoRoteiroListPageContent extends StatefulWidget {
   const ArtigoRoteiroListPageContent({super.key});
 
   @override
-  State<ArtigoRoteiroListPageContent> createState() => _ArtigoRoteiroListPageContentState();
+  State<ArtigoRoteiroListPageContent> createState() =>
+      _ArtigoRoteiroListPageContentState();
 }
 
-class _ArtigoRoteiroListPageContentState extends State<ArtigoRoteiroListPageContent> {
+class _ArtigoRoteiroListPageContentState
+    extends State<ArtigoRoteiroListPageContent> {
+  final _repository = artigoRoteiroRepository;
+
   void _abrirDetalhe({ArtigoRoteiroHeader? header}) async {
     final result = await Navigator.of(context).push<ArtigoRoteiroHeader>(
-      MaterialPageRoute(builder: (_) => ArtigoRoteiroDetailPage(header: header)),
+      MaterialPageRoute(
+          builder: (_) => ArtigoRoteiroDetailPage(header: header)),
     );
     if (result == null) return;
     setState(() {
       if (header == null) {
-        // Novo vínculo: apenas adiciona à lista,
-        // preservando os vínculos já existentes.
-        artigosRoteirosCadastrados.add(result);
+        _repository.add(result);
       } else {
-        // Edição: atualiza apenas o item daquela linha.
-        final idx = artigosRoteirosCadastrados.indexOf(header);
-        if (idx >= 0) {
-          artigosRoteirosCadastrados[idx] = result;
-        }
+        _repository.update(header, result);
       }
     });
   }
-
 
   void _remover(ArtigoRoteiroHeader h) {
     showDialog(
@@ -834,11 +931,13 @@ class _ArtigoRoteiroListPageContentState extends State<ArtigoRoteiroListPageCont
         title: const Text('Confirmar exclusão'),
         content: Text('Remover "${h.nomeArtigo}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() => artigosRoteirosCadastrados.remove(h));
+              setState(() => _repository.remove(h));
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Remover'),
@@ -850,13 +949,15 @@ class _ArtigoRoteiroListPageContentState extends State<ArtigoRoteiroListPageCont
 
   @override
   Widget build(BuildContext context) {
+    final artigos = _repository.getAll();
     return Column(
       children: [
-        _buildHeader('Cadastro Artigo x Roteiro', Icons.link, () => _abrirDetalhe()),
+        _buildHeader(
+            'Cadastro Artigo x Roteiro', Icons.link, () => _abrirDetalhe()),
         Expanded(
-          child: artigosRoteirosCadastrados.isEmpty
+          child: artigos.isEmpty
               ? _emptyState(Icons.link_off, 'Nenhum vínculo cadastrado.')
-              : _buildTable(),
+              : _buildTable(artigos),
         ),
       ],
     );
@@ -865,14 +966,20 @@ class _ArtigoRoteiroListPageContentState extends State<ArtigoRoteiroListPageCont
   Widget _buildHeader(String title, IconData icon, VoidCallback onAdd) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey.shade200))),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.grey.shade200))),
       child: Row(
         children: [
           Icon(icon, color: Colors.grey.shade600),
           const SizedBox(width: 12),
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const Spacer(),
-          ElevatedButton.icon(onPressed: onAdd, icon: const Icon(Icons.add, size: 18), label: const Text('Novo')),
+          ElevatedButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Novo')),
         ],
       ),
     );
@@ -891,7 +998,7 @@ class _ArtigoRoteiroListPageContentState extends State<ArtigoRoteiroListPageCont
     );
   }
 
-  Widget _buildTable() {
+  Widget _buildTable(List<ArtigoRoteiroHeader> artigos) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: SingleChildScrollView(
@@ -899,23 +1006,26 @@ class _ArtigoRoteiroListPageContentState extends State<ArtigoRoteiroListPageCont
         child: DataTable(
           columns: const [
             DataColumn(label: Text('Cód. Artigo')),
-            DataColumn(label: Text('Cód. Produto')),
-            DataColumn(label: Text('Artigo')),
-            DataColumn(label: Text('Roteiro')),
+            DataColumn(label: Text('Nome Artigo')),
             DataColumn(label: Text('Status')),
             DataColumn(label: Text('Ações')),
           ],
-          rows: artigosRoteirosCadastrados.map((h) => DataRow(cells: [
-            DataCell(Text(h.codClassif.toString())),
-            DataCell(Text(h.codProdutoRP)),
-            DataCell(Text(h.nomeArtigo)),
-            DataCell(Text(h.nomeRoteiro)),
-            DataCell(_statusBadge(h.status)),
-            DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
-              IconButton(icon: const Icon(Icons.edit, size: 20), onPressed: () => _abrirDetalhe(header: h)),
-              IconButton(icon: const Icon(Icons.delete, size: 20, color: Colors.red), onPressed: () => _remover(h)),
-            ])),
-          ])).toList(),
+          rows: artigos
+              .map((h) => DataRow(cells: [
+                    DataCell(Text(h.codClassif.toString())),
+                    DataCell(Text(h.descArtigo)),
+                    DataCell(_statusBadge(h.status)),
+                    DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
+                      IconButton(
+                          icon: const Icon(Icons.edit, size: 20),
+                          onPressed: () => _abrirDetalhe(header: h)),
+                      IconButton(
+                          icon: const Icon(Icons.delete,
+                              size: 20, color: Colors.red),
+                          onPressed: () => _remover(h)),
+                    ])),
+                  ]))
+              .toList(),
         ),
       ),
     );
@@ -925,8 +1035,14 @@ class _ArtigoRoteiroListPageContentState extends State<ArtigoRoteiroListPageCont
     final ok = status == 'Ativo';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: ok ? Colors.green.shade50 : Colors.red.shade50, borderRadius: BorderRadius.circular(12)),
-      child: Text(status, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: ok ? Colors.green.shade700 : Colors.red.shade700)),
+      decoration: BoxDecoration(
+          color: ok ? Colors.green.shade50 : Colors.red.shade50,
+          borderRadius: BorderRadius.circular(12)),
+      child: Text(status,
+          style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: ok ? Colors.green.shade700 : Colors.red.shade700)),
     );
   }
 }

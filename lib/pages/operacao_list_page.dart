@@ -1,42 +1,7 @@
 import 'package:flutter/material.dart';
+import '../models/operacao.dart';
+import '../repositories/operacao_repository.dart';
 import 'operacao_detail_page.dart';
-
-/// Modelo de Operação
-class Operacao {
-  final int codOperacao;
-  final String descricao;
-  final String tipoMovimento;
-  final String status;
-
-  Operacao({
-    required this.codOperacao,
-    required this.descricao,
-    required this.tipoMovimento,
-    required this.status,
-  });
-}
-
-/// Lista global de operações cadastradas
-final List<Operacao> operacoesCadastradas = [
-  Operacao(
-    codOperacao: 1000,
-    descricao: 'REMOLHO',
-    tipoMovimento: 'C901',
-    status: 'Ativo',
-  ),
-  Operacao(
-    codOperacao: 1001,
-    descricao: 'ENXUGADEIRA',
-    tipoMovimento: 'C902',
-    status: 'Ativo',
-  ),
-  Operacao(
-    codOperacao: 1002,
-    descricao: 'DIVISORA',
-    tipoMovimento: 'C903',
-    status: 'Ativo',
-  ),
-];
 
 /// Página de listagem de Operações
 class OperacaoListPage extends StatefulWidget {
@@ -47,6 +12,8 @@ class OperacaoListPage extends StatefulWidget {
 }
 
 class _OperacaoListPageState extends State<OperacaoListPage> {
+  final _repository = operacaoRepository;
+
   void _abrirDetalhe({Operacao? operacao}) async {
     final result = await Navigator.of(context).push<Operacao>(
       MaterialPageRoute(
@@ -58,10 +25,9 @@ class _OperacaoListPageState extends State<OperacaoListPage> {
 
     setState(() {
       if (operacao == null) {
-        operacoesCadastradas.add(result);
+        _repository.add(result);
       } else {
-        final idx = operacoesCadastradas.indexOf(operacao);
-        operacoesCadastradas[idx] = result;
+        _repository.update(operacao, result);
       }
     });
   }
@@ -71,7 +37,7 @@ class _OperacaoListPageState extends State<OperacaoListPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirmar exclusão'),
-        content: Text('Deseja remover a operação "${operacao.descricao}"?'),
+        content: Text('Deseja remover a operação "${operacao.descOperacao}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -80,7 +46,7 @@ class _OperacaoListPageState extends State<OperacaoListPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() => operacoesCadastradas.remove(operacao));
+              setState(() => _repository.remove(operacao));
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Operação removida.')),
               );
@@ -95,6 +61,7 @@ class _OperacaoListPageState extends State<OperacaoListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final operacoes = _repository.getAll();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cadastro de Operação'),
@@ -108,9 +75,9 @@ class _OperacaoListPageState extends State<OperacaoListPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: operacoesCadastradas.isEmpty
+        child: operacoes.isEmpty
             ? _buildEmptyState()
-            : _buildDataTable(),
+            : _buildDataTable(operacoes),
       ),
     );
   }
@@ -137,7 +104,7 @@ class _OperacaoListPageState extends State<OperacaoListPage> {
     );
   }
 
-  Widget _buildDataTable() {
+  Widget _buildDataTable(List<Operacao> operacoes) {
     final screenWidth = MediaQuery.of(context).size.width;
     double tableMinWidth = screenWidth - 32; // 16 de padding de cada lado
     if (tableMinWidth < 0) {
@@ -157,12 +124,12 @@ class _OperacaoListPageState extends State<OperacaoListPage> {
               DataColumn(label: Text('Status')),
               DataColumn(label: Text('Ações')),
             ],
-            rows: operacoesCadastradas.map((op) {
+            rows: operacoes.map((op) {
               return DataRow(
                 cells: [
                   DataCell(Text(op.codOperacao.toString())),
-                  DataCell(Text(op.descricao)),
-                  DataCell(Text(op.tipoMovimento)),
+                  DataCell(Text(op.descOperacao)),
+                  DataCell(Text(op.codTipoMv)),
                   DataCell(_buildStatusBadge(op.status)),
                   DataCell(
                     Row(

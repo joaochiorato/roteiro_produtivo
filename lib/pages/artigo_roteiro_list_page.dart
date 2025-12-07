@@ -1,40 +1,7 @@
 import 'package:flutter/material.dart';
-import 'artigo_list_page.dart';
+import '../models/artigo_roteiro_header.dart';
+import '../repositories/artigo_roteiro_repository.dart';
 import 'artigo_roteiro_detail_page.dart';
-
-/// Header de Artigo x Roteiro (resumo)
-class ArtigoRoteiroHeader {
-  final int codClassif;
-  final String codProdutoRP;
-  final int codRefRP;
-  final String nomeArtigo;
-  final String nomeRoteiro;
-  final int opcaoPcp;
-  final String status;
-
-  ArtigoRoteiroHeader({
-    required this.codClassif,
-    required this.codProdutoRP,
-    required this.codRefRP,
-    required this.nomeArtigo,
-    required this.nomeRoteiro,
-    required this.opcaoPcp,
-    required this.status,
-  });
-}
-
-/// Lista global de vínculos Artigo x Roteiro
-final List<ArtigoRoteiroHeader> artigosRoteirosCadastrados = [
-  ArtigoRoteiroHeader(
-    codClassif: 7,
-    codProdutoRP: 'PRP001',
-    codRefRP: 0,
-    nomeArtigo: 'QUARTZO',
-    nomeRoteiro: 'QUARTZO PRP001',
-    opcaoPcp: 0,
-    status: 'Ativo',
-  ),
-];
 
 /// Página de listagem de Artigo x Roteiro
 class ArtigoRoteiroListPage extends StatefulWidget {
@@ -45,6 +12,8 @@ class ArtigoRoteiroListPage extends StatefulWidget {
 }
 
 class _ArtigoRoteiroListPageState extends State<ArtigoRoteiroListPage> {
+  final _repository = artigoRoteiroRepository;
+
   void _abrirDetalhe({ArtigoRoteiroHeader? header}) async {
     final result = await Navigator.of(context).push<ArtigoRoteiroHeader>(
       MaterialPageRoute(
@@ -56,15 +25,9 @@ class _ArtigoRoteiroListPageState extends State<ArtigoRoteiroListPage> {
 
     setState(() {
       if (header == null) {
-        // Novo vínculo: apenas adiciona à lista,
-        // preservando os vínculos já existentes.
-        artigosRoteirosCadastrados.add(result);
+        _repository.add(result);
       } else {
-        // Edição: atualiza apenas o item daquela linha.
-        final idx = artigosRoteirosCadastrados.indexOf(header);
-        if (idx >= 0) {
-          artigosRoteirosCadastrados[idx] = result;
-        }
+        _repository.update(header, result);
       }
     });
   }
@@ -83,7 +46,7 @@ class _ArtigoRoteiroListPageState extends State<ArtigoRoteiroListPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() => artigosRoteirosCadastrados.remove(header));
+              setState(() => _repository.remove(header));
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Vínculo removido.')),
               );
@@ -98,6 +61,7 @@ class _ArtigoRoteiroListPageState extends State<ArtigoRoteiroListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final artigos = _repository.getAll();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cadastro Artigo x Roteiro'),
@@ -111,9 +75,9 @@ class _ArtigoRoteiroListPageState extends State<ArtigoRoteiroListPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: artigosRoteirosCadastrados.isEmpty
+        child: artigos.isEmpty
             ? _buildEmptyState()
-            : _buildDataTable(),
+            : _buildDataTable(artigos),
       ),
     );
   }
@@ -145,7 +109,7 @@ class _ArtigoRoteiroListPageState extends State<ArtigoRoteiroListPage> {
     );
   }
 
-  Widget _buildDataTable() {
+  Widget _buildDataTable(List<ArtigoRoteiroHeader> artigos) {
     final screenWidth = MediaQuery.of(context).size.width;
     double tableMinWidth = screenWidth - 32; // 16 de padding de cada lado
     if (tableMinWidth < 0) {
@@ -160,19 +124,15 @@ class _ArtigoRoteiroListPageState extends State<ArtigoRoteiroListPage> {
           child: DataTable(
             columns: const [
               DataColumn(label: Text('Cód. Artigo')),
-              DataColumn(label: Text('Cód. Produto')),
-              DataColumn(label: Text('Artigo')),
-              DataColumn(label: Text('Roteiro')),
+              DataColumn(label: Text('Nome Artigo')),
               DataColumn(label: Text('Status')),
               DataColumn(label: Text('Ações')),
             ],
-            rows: artigosRoteirosCadastrados.map((header) {
+            rows: artigos.map((header) {
               return DataRow(
                 cells: [
                   DataCell(Text(header.codClassif.toString())),
-                  DataCell(Text(header.codProdutoRP)),
-                  DataCell(Text(header.nomeArtigo)),
-                  DataCell(Text(header.nomeRoteiro)),
+                  DataCell(Text(header.descArtigo)),
                   DataCell(_buildStatusBadge(header.status)),
                   DataCell(
                     Row(

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Select-Object -First 50)",
+      "Bash(flutter run:*)",
+      "Bash(flutter clean:*)",
+      "Bash(dart analyze:*)",
+      "Bash(tree:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
